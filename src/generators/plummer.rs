@@ -2,8 +2,11 @@ use super::Generator;
 use crate::particles::*;
 use crate::vector::Vector3;
 use rand::prelude::*;
-use rand::distributions::Standard;
+use rand::distributions::{ Standard };
+use rand_distr::{ Normal, Distribution };
 use std::f64::consts::PI;
+
+pub const G: f64 = 6.67e-11;
 
 pub struct Plummer
 {
@@ -109,11 +112,19 @@ impl Plummer
         return output;
     }
 
-    fn generate_velocities(&self) -> Vec::<Vector3>
+    fn generate_velocity(&self, r: f64) -> Vector3
     {
-        let output = vec![Vector3::null_vector(); self.n];
+        let disp = G * self.m0 / (6.0 * (r.powi(2) + self.plummer_radius.powi(2)).sqrt());
+        let normal_distr = Normal::new(0.0, disp.sqrt()).unwrap();
+        let mut uniform_distr = StdRng::from_entropy();
 
-        return output;
+        let mag = normal_distr.sample(&mut rand::thread_rng()).abs() / 2.0;
+        let phi: f64 = uniform_distr.sample(Standard);
+        let phi = phi * 2.0 * PI;
+        let theta: f64 = uniform_distr.sample(Standard);
+        let theta = theta * PI;
+
+        return Self::spherical_to_cartesian(mag, phi, theta);
     }
 }
 
@@ -123,12 +134,11 @@ impl Generator for Plummer
     {
         let mut output = ParticleSet::new()?;
         let positions = self.generate_positions();
-        let velocities = self.generate_velocities();
         let masses = vec![self.m0 / (self.n as f64); self.n];
 
-        if (positions.len() != velocities.len()) || (positions.len() != masses.len())
+        if positions.len() != masses.len()
         {
-            return Err("generation of velocities, positions or masses went wrong");
+            return Err("generation of positions or masses went wrong");
         }
 
         for i in 0..positions.len()
@@ -136,7 +146,7 @@ impl Generator for Plummer
             output.particles.push(
                 Particle::new(
                     positions[i], 
-                    velocities[i], 
+                    self.generate_velocity(positions[i].mag()), 
                     masses[i]
                 )?
             );
