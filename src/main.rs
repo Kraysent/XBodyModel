@@ -2,14 +2,16 @@ use nbody::generators::{ Generator, plummer::Plummer };
 use nbody::integrators::{ Integrator, simple_nbody::SimpleNBody };
 use nbody::particles::Particle;
 use nbody::profiler::Profiler;
+use nbody::quantity::Unit;
 use std::process;
 
 fn main()
 {
-    let r = 3e+17;
+    let r = Unit::kpc() * 0.01;
+    let m = Unit::msun() * 1e+9;
     let n = 100;
-    let m = 1e9 * 2e30;
-    let plummer = Plummer::new(r, n, Some(m)).unwrap_or_else(|err| 
+
+    let plummer = Plummer::new(r.value, n, Some(m.value)).unwrap_or_else(|err| 
     {
         eprintln!("Error during initialisation of particles: {}", err);
         process::exit(1);
@@ -33,14 +35,14 @@ fn main()
         process::exit(1);
     });
 
-    let dt = 365.0 * 86400.0;
+    let dt = Unit::Second * 365.0 * 86400.0;
 
     {
         let _p = Profiler::new(None);
 
-        for _ in 0..10000
+        for _ in 0..1000
         {
-            integr.integrate(dt);
+            integr.integrate(dt.value);
         }
     }
 
@@ -52,9 +54,9 @@ fn main()
 
 fn print_particle(p: &Particle)
 {
-    println!("{} {} {}", 
-                p.position.x, p.position.y, p.position.z);
-            //     p.velocity.x, p.velocity.y, p.velocity.z,
-            //     p.mass
-            // );
+    println!("{} {} {} {} {} {} {}", 
+                p.position.x, p.position.y, p.position.z,
+                p.velocity.x, p.velocity.y, p.velocity.z,
+                p.mass
+            );
 }
