@@ -1,6 +1,9 @@
 use std::ops::{ Mul, Div, Add, Sub };
 use std::cmp::{ Eq, PartialEq };
 use std::collections::HashMap;
+use crate::vector::Vector3;
+
+//-------------------------------Unit-------------------------------//
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub enum Unit
@@ -21,13 +24,63 @@ impl Unit
     }
 }
 
-impl Mul<f64> for Unit
+impl Add<Unit> for Unit
 {
     type Output = Quantity;
 
-    fn mul(self, rhs: f64) -> Quantity
+    fn add(self, rhs: Unit) -> Quantity
     {
-        return Quantity::new() * self * rhs;
+        return Quantity::new() * self + Quantity::new() * rhs;
+    }
+}
+
+impl Sub<Unit> for Unit
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: Unit) -> Quantity
+    {
+        return Quantity::new() * self - Quantity::new() * rhs;
+    }
+}
+
+impl Add<ComplexUnit> for Unit
+{
+    type Output = Quantity;
+
+    fn add(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self + Quantity::new() * rhs;
+    }
+}
+
+impl Sub<ComplexUnit> for Unit
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self - Quantity::new() * rhs;
+    }
+}
+
+impl Add<Quantity> for Unit
+{
+    type Output = Quantity;
+
+    fn add(self, rhs: Quantity) -> Quantity
+    {
+        return Quantity::new() * self + rhs;
+    }
+}
+
+impl Sub<Quantity> for Unit
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: Quantity) -> Quantity
+    {
+        return Quantity::new() * self - rhs;
     }
 }
 
@@ -41,15 +94,77 @@ impl Mul<Unit> for Unit
     }
 }
 
+impl Div<Unit> for Unit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: Unit) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
+    }
+}
+
+impl Mul<ComplexUnit> for Unit
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self * rhs;
+    }
+}
+
+impl Div<ComplexUnit> for Unit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
+    }
+}
+
 impl Mul<Quantity> for Unit
 {
     type Output = Quantity;
 
     fn mul(self, rhs: Quantity) -> Quantity
     { 
-        return rhs * self;
+        return Quantity::new() * self * rhs;
     }
 }
+
+impl Div<Quantity> for Unit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: Quantity) -> Quantity
+    { 
+        return Quantity::new() * self / rhs;
+    }
+}
+
+impl Mul<f64> for Unit
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: f64) -> Quantity
+    {
+        return Quantity::new() * self * rhs;
+    }
+}
+
+impl Div<f64> for Unit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: f64) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
+    }
+}
+
+//-------------------------------ComplexUnit-------------------------------//
 
 #[allow(non_camel_case_types)]
 pub enum ComplexUnit
@@ -84,13 +199,83 @@ impl ComplexUnit
     }
 }
 
-impl Mul<f64> for ComplexUnit
+impl Add<Unit> for ComplexUnit
 {
     type Output = Quantity;
 
-    fn mul(self, rhs: f64) -> Quantity
+    fn add(self, rhs: Unit) -> Quantity
     {
-        return self.convert() * rhs;
+        return Quantity::new() * self + Quantity::new() * rhs; 
+    }
+}
+
+impl Sub<Unit> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: Unit) -> Quantity
+    {
+        return Quantity::new() * self - Quantity::new() * rhs; 
+    }
+}
+
+impl Add<ComplexUnit> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn add(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self + Quantity::new() * rhs; 
+    }
+}
+
+impl Sub<ComplexUnit> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self - Quantity::new() * rhs; 
+    }
+}
+
+impl Add<Quantity> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn add(self, rhs: Quantity) -> Quantity
+    {
+        return Quantity::new() * self + rhs; 
+    }
+}
+
+impl Sub<Quantity> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: Quantity) -> Quantity
+    {
+        return Quantity::new() * self - rhs; 
+    }
+}
+
+impl Mul<Unit> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: Unit) -> Quantity
+    {
+        return Quantity::new() * self * rhs;
+    }
+}
+
+impl Div<Unit> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: Unit) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
     }
 }
 
@@ -100,7 +285,17 @@ impl Mul<ComplexUnit> for ComplexUnit
 
     fn mul(self, rhs: ComplexUnit) -> Quantity
     {
-        return self.convert() * rhs;
+        return Quantity::new() * self * rhs;
+    }
+}
+
+impl Div<ComplexUnit> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: ComplexUnit) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
     }
 }
 
@@ -110,9 +305,41 @@ impl Mul<Quantity> for ComplexUnit
 
     fn mul(self, rhs: Quantity) -> Quantity
     {
-        return self.convert() * rhs;
+        return Quantity::new() * self * rhs;
     }
 }
+
+impl Div<Quantity> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: Quantity) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
+    }
+}
+
+impl Mul<f64> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: f64) -> Quantity
+    {
+        return Quantity::new() * self * rhs;
+    }
+}
+
+impl Div<f64> for ComplexUnit
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: f64) -> Quantity
+    {
+        return Quantity::new() * self / rhs;
+    }
+}
+
+//-------------------------------Quantity-------------------------------//
 
 #[derive(Debug)]
 pub struct Quantity
@@ -170,7 +397,47 @@ impl PartialEq for Quantity
     }
 }
 
-impl Add for Quantity
+impl Add<Unit> for Quantity
+{
+    type Output = Quantity;
+
+    fn add(self, rhs: Unit) -> Quantity
+    {
+        return self + Quantity::new() * rhs;
+    }
+}
+
+impl Sub<Unit> for Quantity
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: Unit) -> Quantity
+    {
+        return self - Quantity::new() * rhs;
+    }
+}
+
+impl Add<ComplexUnit> for Quantity
+{
+    type Output = Quantity;
+
+    fn add(self, rhs: ComplexUnit) -> Quantity
+    {
+        return self + Quantity::new() * rhs;
+    }
+}
+
+impl Sub<ComplexUnit> for Quantity
+{
+    type Output = Quantity;
+
+    fn sub(self, rhs: ComplexUnit) -> Quantity
+    {
+        return self - Quantity::new() * rhs;
+    }
+}
+
+impl Add<Quantity> for Quantity
 {
     type Output = Quantity;
 
@@ -191,7 +458,7 @@ impl Add for Quantity
     }
 }
 
-impl Sub for Quantity
+impl Sub<Quantity> for Quantity
 {
     type Output = Quantity;
 
@@ -212,6 +479,86 @@ impl Sub for Quantity
     }
 }
 
+impl Mul<Unit> for Quantity
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: Unit) -> Quantity
+    {
+        let mut rhs_q = Quantity::new();
+        rhs_q.units.insert(rhs, 1);
+
+        return self * rhs_q;
+    }
+}
+
+impl Div<Unit> for Quantity
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: Unit) -> Quantity
+    {
+        let mut rhs_q = Quantity::new();
+        rhs_q.units.insert(rhs, 1);
+
+        return self / rhs_q;
+    }
+}
+
+impl Mul<ComplexUnit> for Quantity
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: ComplexUnit) -> Quantity
+    {
+        return self * rhs.convert();
+    }
+}
+
+impl Div<ComplexUnit> for Quantity
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: ComplexUnit) -> Quantity
+    {
+        return self / (Quantity::new() * rhs);
+    }
+}
+
+impl Mul<Quantity> for Quantity
+{
+    type Output = Quantity;
+
+    fn mul(self, rhs: Quantity) -> Quantity
+    {
+        let mut res = Quantity::new();
+
+        res.units.insert(Unit::Meter, self.units[&Unit::Meter] + rhs.units[&Unit::Meter]);
+        res.units.insert(Unit::Second, self.units[&Unit::Second] + rhs.units[&Unit::Second]);
+        res.units.insert(Unit::Kilogram, self.units[&Unit::Kilogram] + rhs.units[&Unit::Kilogram]);
+        res.value = self.value * rhs.value;
+
+        return res;
+    }
+}
+
+impl Div<Quantity> for Quantity
+{
+    type Output = Quantity;
+
+    fn div(self, rhs: Quantity) -> Quantity
+    {
+        let mut res = Quantity::new();
+
+        res.units.insert(Unit::Meter, self.units[&Unit::Meter] - rhs.units[&Unit::Meter]);
+        res.units.insert(Unit::Second, self.units[&Unit::Second] - rhs.units[&Unit::Second]);
+        res.units.insert(Unit::Kilogram, self.units[&Unit::Kilogram] - rhs.units[&Unit::Kilogram]);
+        res.value = self.value / rhs.value;
+
+        return res;
+    }
+}
+
 impl Mul<f64> for Quantity
 {
     type Output = Quantity;
@@ -223,50 +570,6 @@ impl Mul<f64> for Quantity
             value: self.value * rhs,
             units: self.units
         }
-    }
-}
-
-impl Mul<Unit> for Quantity
-{
-    type Output = Quantity;
-
-    fn mul(self, rhs: Unit) -> Quantity
-    {
-        let mut rhs_q = Quantity::new();
-        rhs_q.value = 1.0;
-        rhs_q.units.insert(rhs, 1);
-
-        return self * rhs_q;
-    }
-}
-
-impl Mul<ComplexUnit> for Quantity
-{
-    type Output = Quantity;
-
-    fn mul(self, rhs: ComplexUnit) -> Quantity
-    {
-        return rhs * self;
-    }
-}
-
-impl Mul<Quantity> for Quantity
-{
-    type Output = Quantity;
-
-    fn mul(self, rhs: Quantity) -> Quantity
-    {
-        let mut units = HashMap::new();
-
-        units.insert(Unit::Meter, self.units[&Unit::Meter] + rhs.units[&Unit::Meter]);
-        units.insert(Unit::Second, self.units[&Unit::Second] + rhs.units[&Unit::Second]);
-        units.insert(Unit::Kilogram, self.units[&Unit::Kilogram] + rhs.units[&Unit::Kilogram]);
-
-        return Quantity
-        {
-            value: self.value * rhs.value,
-            units
-        };
     }
 }
 
@@ -284,36 +587,25 @@ impl Div<f64> for Quantity
     }
 }
 
-impl Div<Quantity> for Quantity
+//-------------------------------VectorQuantity-------------------------------//
+
+pub struct VectorQuantity
 {
-    type Output = Quantity;
-
-    fn div(self, rhs: Quantity) -> Quantity
-    {
-        let mut units = HashMap::new();
-
-        units.insert(Unit::Meter, self.units[&Unit::Meter] - rhs.units[&Unit::Meter]);
-        units.insert(Unit::Second, self.units[&Unit::Second] - rhs.units[&Unit::Second]);
-        units.insert(Unit::Kilogram, self.units[&Unit::Kilogram] - rhs.units[&Unit::Kilogram]);
-
-        return Quantity
-        {
-            value: self.value / rhs.value,
-            units
-        };
-    }
+    pub value: Vector3,
+    pub units: HashMap<Unit, i32>
 }
 
-impl Div<Unit> for Quantity
+impl VectorQuantity
 {
-    type Output = Quantity;
-
-    fn div(self, rhs: Unit) -> Quantity
+    pub fn new() -> VectorQuantity
     {
-        let mut rhs_q = Quantity::new();
-        rhs_q.value = 1.0;
-        rhs_q.units.insert(rhs, 1);
+        let value = Vector3::null_vector();
+        let mut units = HashMap::new();
 
-        return self / rhs_q;
+        units.insert(Unit::Meter, 0);
+        units.insert(Unit::Second, 0);
+        units.insert(Unit::Kilogram, 0);
+
+        return VectorQuantity { value, units }
     }
 }

@@ -11,6 +11,11 @@ pub struct Vector3
 
 impl Vector3
 {
+    pub fn new(x: f64, y: f64, z: f64) -> Vector3
+    {
+        return Vector3 { x, y, z };
+    }
+
     pub fn dot(&self, v: &Vector3) -> f64
     {
         return self.x * v.x + self.y * v.y + self.z * v.z;
