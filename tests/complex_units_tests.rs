@@ -1,4 +1,5 @@
-use nbody::quantity::{ Unit, ComplexUnit, Quantity };
+use nbody::quantity::{ Unit, ComplexUnit, Quantity, VectorQuantity };
+use nbody::vector::Vector3;
 
 #[test]
 fn complex_unit_add_compatible_unit()
@@ -268,6 +269,35 @@ fn complex_unit_div_f64()
     let mut expected = Quantity::new();
     expected.units.insert(Unit::Meter, 1);
     expected.value = 1.0 / 6.5;
+
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn complex_unit_mul_vector_quantity()
+{
+    let a = ComplexUnit::s;
+    let v = Vector3::new(1.0, 2.0, 3.0);
+    let mut b = VectorQuantity::from(v);
+    b.units.insert(Unit::Kilogram, 2);
+
+    let actual = a * b;
+    let mut expected = VectorQuantity::from(v);
+    expected.units.insert(Unit::Kilogram, 2);
+    expected.units.insert(Unit::Second, 1);
+
+    assert_eq!(actual, expected);
+}
+
+#[test]
+fn complex_unit_mul_vector()
+{
+    let a = ComplexUnit::s;
+    let b = Vector3::new(1.0, 2.0, 3.0);
+
+    let actual = a * b;
+    let mut expected = VectorQuantity::from(b);
+    expected.units.insert(Unit::Second, 1);
 
     assert_eq!(actual, expected);
 }

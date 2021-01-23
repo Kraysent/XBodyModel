@@ -5,6 +5,8 @@
 * use quantities in computations
 * implement all quantities operations (see below) and prepare unit tests for each of them
 * create tests for basic unit & complexunit & quantity finctions
+* add `Quantity::from(f64, Unit)`
+* add tests for `Vector3` class
 
 ### In more distant future:
 * add more integrators (Barnes-Hut algorithm at least) and generators (Solar system at least)
@@ -19,22 +21,23 @@
 ### Operations on quantities:
 |                   	| Unit 	| ComplexUnit 	| Quantity 	| VectorQuantity 	|
 |-------------------	|:----:	|:-----------:	|:--------:	|:--------------:	|
-| +- Unit           	|   +  	|      +      	|     +    	|                	|
-| +- ComplexUnit    	|   +  	|      +      	|     +    	|                	|
-| +- Quantity       	|   +  	|      +      	|     +    	|                	|
-| +- VectorQuantity 	|   x  	|      x      	|     x    	|                	|
-| *  Unit           	|   +  	|      +      	|     +    	|                	|
-| /  Unit           	|   +  	|      +      	|     +    	|                	|
-| *  ComplexUnit    	|   +  	|      +      	|     +    	|                	|
-| /  ComplexUnit    	|   +  	|      +      	|     +    	|                	|
-| *  Quantity       	|   +  	|      +      	|     +    	|                	|
-| /  Quantity       	|   +  	|      +      	|     +    	|                	|
-| *  VectorQuantity 	|      	|             	|          	|                	|
+| +- Unit           	|   +  	|      +      	|     +    	|        x       	|
+| +- ComplexUnit    	|   +  	|      +      	|     +    	|        x       	|
+| +- Quantity       	|   +  	|      +      	|     +    	|        x       	|
+| +- VectorQuantity 	|   x  	|      x      	|     x    	|        +       	|
+| *  Unit           	|   +  	|      +      	|     +    	|        +       	|
+| /  Unit           	|   +  	|      +      	|     +    	|        +       	|
+| *  ComplexUnit    	|   +  	|      +      	|     +    	|        +       	|
+| /  ComplexUnit    	|   +  	|      +      	|     +    	|        +       	|
+| *  Quantity       	|   +  	|      +      	|     +    	|        +       	|
+| /  Quantity       	|   +  	|      +      	|     +    	|        +       	|
+| *  VectorQuantity 	|   +  	|      +      	|     +    	|        x       	|
 | /  VectorQuantity 	|   x  	|      x      	|     x    	|        x       	|
-| *  f64            	|   +  	|      +      	|     +    	|                	|
-| /  f64            	|   +  	|      +      	|     +    	|                	|
-| *  Vector3        	|      	|             	|          	|                	|
+| *  f64            	|   +  	|      +      	|     +    	|        +       	|
+| /  f64            	|   +  	|      +      	|     +    	|        +       	|
+| *  Vector3        	|   +  	|      +      	|     +    	|        x       	|
 | /  Vector3        	|   x  	|      x      	|     x    	|        x       	|
 
 ## Thoughts
 * Do operations on quantities need to panic in case of incompatability?
+* Maybe timestep should be a property of integrator and it should evolve on some other time provided to the `Integrator.evolve` function

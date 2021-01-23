@@ -1,5 +1,5 @@
 use std::ops::{ Mul, Div, Add, Sub };
-use std::cmp::{ Eq, PartialEq };
+use std::cmp::PartialEq;
 use std::collections::HashMap;
 use crate::vector::Vector3;
 
@@ -144,6 +144,16 @@ impl Div<Quantity> for Unit
     }
 }
 
+impl Mul<VectorQuantity> for Unit
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: VectorQuantity) -> VectorQuantity
+    {
+        return rhs * self;
+    }
+}
+
 impl Mul<f64> for Unit
 {
     type Output = Quantity;
@@ -161,6 +171,16 @@ impl Div<f64> for Unit
     fn div(self, rhs: f64) -> Quantity
     {
         return Quantity::new() * self / rhs;
+    }
+}
+
+impl Mul<Vector3> for Unit
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: Vector3) -> VectorQuantity
+    {
+        return VectorQuantity::from(rhs) * self;
     }
 }
 
@@ -319,6 +339,16 @@ impl Div<Quantity> for ComplexUnit
     }
 }
 
+impl Mul<VectorQuantity> for ComplexUnit
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: VectorQuantity) -> VectorQuantity
+    {
+        return rhs * self;
+    }
+}
+
 impl Mul<f64> for ComplexUnit
 {
     type Output = Quantity;
@@ -336,6 +366,16 @@ impl Div<f64> for ComplexUnit
     fn div(self, rhs: f64) -> Quantity
     {
         return Quantity::new() * self / rhs;
+    }
+}
+
+impl Mul<Vector3> for ComplexUnit
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: Vector3) -> VectorQuantity
+    {
+        return VectorQuantity::from(rhs) * self;
     }
 }
 
@@ -559,6 +599,16 @@ impl Div<Quantity> for Quantity
     }
 }
 
+impl Mul<VectorQuantity> for Quantity
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: VectorQuantity) -> VectorQuantity
+    {
+        return rhs * self;
+    }
+}
+
 impl Mul<f64> for Quantity
 {
     type Output = Quantity;
@@ -587,8 +637,19 @@ impl Div<f64> for Quantity
     }
 }
 
+impl Mul<Vector3> for Quantity
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: Vector3) -> VectorQuantity
+    {
+        return VectorQuantity::from(rhs) * self;
+    }
+}
+
 //-------------------------------VectorQuantity-------------------------------//
 
+#[derive(Debug, PartialEq)]
 pub struct VectorQuantity
 {
     pub value: Vector3,
@@ -597,15 +658,171 @@ pub struct VectorQuantity
 
 impl VectorQuantity
 {
-    pub fn new() -> VectorQuantity
+    pub fn from(v: Vector3) -> VectorQuantity
     {
-        let value = Vector3::null_vector();
         let mut units = HashMap::new();
 
         units.insert(Unit::Meter, 0);
         units.insert(Unit::Second, 0);
         units.insert(Unit::Kilogram, 0);
 
-        return VectorQuantity { value, units }
+        return VectorQuantity { value: v, units }
+    }
+
+    pub fn mag(self) -> Quantity
+    {
+        return Quantity
+        {
+            value: self.value.mag(),
+            units: self.units
+        }
+    }
+}
+
+impl Add<VectorQuantity> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn add(self, rhs: VectorQuantity) -> VectorQuantity
+    {
+        if self.units == rhs.units
+        {
+            return VectorQuantity
+            {
+                value: self.value + rhs.value,
+                units: self.units
+            };
+        }
+        else
+        {
+            panic!("trying to sum incompatible units");
+        }
+    }
+}
+
+impl Sub<VectorQuantity> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn sub(self, rhs: VectorQuantity) -> VectorQuantity
+    {
+        if self.units == rhs.units
+        {
+            return VectorQuantity
+            {
+                value: self.value - rhs.value,
+                units: self.units
+            };
+        }
+        else
+        {
+            panic!("trying to sum incompatible units");
+        }
+    }
+}
+
+impl Mul<Unit> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: Unit) -> VectorQuantity
+    {
+        return self * (Quantity::new() * rhs);
+    }
+}
+
+impl Div<Unit> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn div(self, rhs: Unit) -> VectorQuantity
+    {
+        return self / (Quantity::new() * rhs);
+    }
+}
+
+impl Mul<ComplexUnit> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: ComplexUnit) -> VectorQuantity
+    {
+        return self * (Quantity::new() * rhs);
+    }
+}
+
+impl Div<ComplexUnit> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn div(self, rhs: ComplexUnit) -> VectorQuantity
+    {
+        return self / (Quantity::new() * rhs);
+    }
+}
+
+impl Mul<Quantity> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: Quantity) -> VectorQuantity
+    {
+        let mut units = HashMap::new();
+        units.insert(Unit::Meter, self.units[&Unit::Meter] + rhs.units[&Unit::Meter]);
+        units.insert(Unit::Second, self.units[&Unit::Second] + rhs.units[&Unit::Second]);
+        units.insert(Unit::Kilogram, self.units[&Unit::Kilogram] + rhs.units[&Unit::Kilogram]);
+
+        return VectorQuantity
+        {
+            value: self.value * rhs.value,
+            units
+        }
+    }
+}
+
+impl Div<Quantity> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn div(self, rhs: Quantity) -> VectorQuantity
+    {
+        let mut units = HashMap::new();
+        units.insert(Unit::Meter, self.units[&Unit::Meter] - rhs.units[&Unit::Meter]);
+        units.insert(Unit::Second, self.units[&Unit::Second] - rhs.units[&Unit::Second]);
+        units.insert(Unit::Kilogram, self.units[&Unit::Kilogram] - rhs.units[&Unit::Kilogram]);
+
+        return VectorQuantity
+        {
+            value: self.value / rhs.value,
+            units
+        }
+    }
+}
+
+impl Mul<f64> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: f64) -> VectorQuantity
+    {
+        return VectorQuantity
+        {
+            value: self.value * rhs,
+            units: self.units
+        }
+    }
+}
+
+impl Div<f64> for VectorQuantity
+{
+    type Output = VectorQuantity;
+
+    fn div(self, rhs: f64) -> VectorQuantity
+    {
+        return VectorQuantity
+        {
+            value: self.value / rhs,
+            units: self.units
+        }
     }
 }
