@@ -3,8 +3,7 @@
 * add epsilon (smoothing factor) to forces count in SimpleNBody generator
 * add Runge-Kutta method for numerical integration in SimpleNBody (most likely would use `enum` for this)
 * use quantities in computations
-* implement all quantities operations (see below) and prepare unit tests for each of them
-* create tests for basic unit & complexunit & quantity finctions
+* create tests for basic `Unit`, `ComplexUnit`, `Quantity` and `VectorQuantity` finctions
 * add `Quantity::from(f64, Unit)`
 * add tests for `Vector3` class
 
@@ -18,26 +17,9 @@
 * add unit tests for integrators and generators
 * add documentation
 
-### Operations on quantities:
-|                   	| Unit 	| ComplexUnit 	| Quantity 	| VectorQuantity 	|
-|-------------------	|:----:	|:-----------:	|:--------:	|:--------------:	|
-| +- Unit           	|   +  	|      +      	|     +    	|        x       	|
-| +- ComplexUnit    	|   +  	|      +      	|     +    	|        x       	|
-| +- Quantity       	|   +  	|      +      	|     +    	|        x       	|
-| +- VectorQuantity 	|   x  	|      x      	|     x    	|        +       	|
-| *  Unit           	|   +  	|      +      	|     +    	|        +       	|
-| /  Unit           	|   +  	|      +      	|     +    	|        +       	|
-| *  ComplexUnit    	|   +  	|      +      	|     +    	|        +       	|
-| /  ComplexUnit    	|   +  	|      +      	|     +    	|        +       	|
-| *  Quantity       	|   +  	|      +      	|     +    	|        +       	|
-| /  Quantity       	|   +  	|      +      	|     +    	|        +       	|
-| *  VectorQuantity 	|   +  	|      +      	|     +    	|        x       	|
-| /  VectorQuantity 	|   x  	|      x      	|     x    	|        x       	|
-| *  f64            	|   +  	|      +      	|     +    	|        +       	|
-| /  f64            	|   +  	|      +      	|     +    	|        +       	|
-| *  Vector3        	|   +  	|      +      	|     +    	|        x       	|
-| /  Vector3        	|   x  	|      x      	|     x    	|        x       	|
+## Completed things:
+* implement all operations on quantities and prepare unit tests for each of them
 
 ## Thoughts
-* Do operations on quantities need to panic in case of incompatability?
 * Maybe timestep should be a property of integrator and it should evolve on some other time provided to the `Integrator.evolve` function
+* It would be good to create a way that forces integrators and generators to use quantities of specific types; for example, radius of the Plummer sphere **must** be in meters and in nothing else. 
