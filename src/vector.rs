@@ -1,5 +1,5 @@
 use std::cmp::PartialEq;
-use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign};
+use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
 #[derive(Copy, Clone, Debug)]
 pub struct Vector3
@@ -77,16 +77,6 @@ impl AddAssign for Vector3
     }
 }
 
-impl SubAssign for Vector3
-{
-    fn sub_assign(&mut self, rhs: Vector3) 
-    { 
-        self.x -= rhs.x;
-        self.y -= rhs.y;
-        self.z -= rhs.z;        
-    }
-}
-
 impl Sub for Vector3
 {
     type Output = Self;
@@ -98,6 +88,16 @@ impl Sub for Vector3
             y: self.y - rhs.y,
             z: self.z - rhs.z
         }
+    }
+}
+
+impl SubAssign for Vector3
+{
+    fn sub_assign(&mut self, rhs: Vector3) 
+    { 
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;        
     }
 }
 
@@ -115,6 +115,16 @@ impl Mul<f64> for Vector3
     }
 }
 
+impl MulAssign<f64> for Vector3
+{
+    fn mul_assign(&mut self, rhs: f64)
+    {
+        self.x *= rhs;
+        self.y *= rhs;
+        self.z *= rhs;
+    }
+}
+
 impl Div<f64> for Vector3
 {
     type Output = Self;
@@ -125,6 +135,31 @@ impl Div<f64> for Vector3
             x: self.x / rhs, 
             y: self.y / rhs,
             z: self.z / rhs
+        }
+    }
+}
+
+impl DivAssign<f64> for Vector3
+{
+    fn div_assign(&mut self, rhs: f64)
+    {
+        self.x /= rhs;
+        self.y /= rhs;
+        self.z /= rhs;
+    }
+}
+
+impl Mul<Vector3> for f64
+{
+    type Output = Vector3;
+
+    fn mul(self, rhs: Vector3) -> Vector3
+    {
+        return Vector3 
+        {
+            x: self * rhs.x,
+            y: self * rhs.y,
+            z: self * rhs.z
         }
     }
 }
