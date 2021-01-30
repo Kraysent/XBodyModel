@@ -3,9 +3,7 @@
 * add epsilon (smoothing factor) to forces count in SimpleNBody generator
 * add Runge-Kutta method for numerical integration in SimpleNBody (most likely would use `enum` for this)
 * use quantities in computations
-* create tests for basic `Unit`, `ComplexUnit`, `Quantity` and `VectorQuantity` finctions
-* add `Quantity::from(f64, Unit)`
-* add tests for `Vector3` class
+* create tests for basic `Unit`, `ComplexUnit`, `Quantity` and `VectorQuantity` functions
 
 ### In more distant future:
 * add more integrators (Barnes-Hut algorithm at least) and generators (Solar system at least)

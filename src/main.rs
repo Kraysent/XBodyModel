@@ -2,19 +2,19 @@ use nbody::generators::{ Generator, plummer::Plummer };
 use nbody::integrators::{ Integrator, simple_nbody::SimpleNBody };
 use nbody::particles::Particle;
 use nbody::profiler::Profiler;
-use nbody::quantity::ComplexUnit;
+use nbody::quantity::Units;
 use std::process;
 
 fn main()
 {
-    let r =  ComplexUnit::kpc * 0.01;
-    let m =  ComplexUnit::MSun * 1e+9;
+    let r = 0.01 * Units::kpc;
+    let m = 1e+9 * Units::MSun;
     let n = 100;
 
     let plummer = Plummer::new(
-        r.value_in(ComplexUnit::m.convert()), 
+        r.value_in(Units::m.convert()), 
         n, 
-        Some(m.value_in(ComplexUnit::kg.convert()))
+        Some(m.value_in(Units::kg.convert()))
     ).unwrap_or_else(|err| 
     {
         eprintln!("Error during initialisation of particles: {}", err);
@@ -39,14 +39,14 @@ fn main()
         process::exit(1);
     });
 
-    let dt = ComplexUnit::yr * 1.0;
+    let dt = Units::yr * 1.0;
 
     {
         let _p = Profiler::new(None);
 
         for _ in 0..1000
         {
-            integr.integrate(dt.value_in(ComplexUnit::s.convert()));
+            integr.integrate(dt.value_in(Units::s.convert()));
         }
     }
 
