@@ -1,31 +1,27 @@
 ## Currently available functionality on Quantities:
-|                   	| Unit 	| ComplexUnit 	| Quantity 	| VectorQuantity 	|
-|-------------------	|:----:	|:-----------:	|:--------:	|:--------------:	|
-| +- Unit           	|   +  	|      +      	|     +    	|        x       	|
-| +- ComplexUnit    	|   +  	|      +      	|     +    	|        x       	|
-| +- Quantity       	|   +  	|      +      	|     +    	|        x       	|
-| +- VectorQuantity 	|   x  	|      x      	|     x    	|        +       	|
-| *  Unit           	|   +  	|      +      	|     +    	|        +       	|
-| /  Unit           	|   +  	|      +      	|     +    	|        +       	|
-| *  ComplexUnit    	|   +  	|      +      	|     +    	|        +       	|
-| /  ComplexUnit    	|   +  	|      +      	|     +    	|        +       	|
-| *  Quantity       	|   +  	|      +      	|     +    	|        +       	|
-| /  Quantity       	|   +  	|      +      	|     +    	|        +       	|
-| *  VectorQuantity 	|   +  	|      +      	|     +    	|        x       	|
-| /  VectorQuantity 	|   x  	|      x      	|     x    	|        x       	|
-| *  f64            	|   +  	|      +      	|     +    	|        +       	|
-| /  f64            	|   +  	|      +      	|     +    	|        +       	|
-| *  Vector3        	|   +  	|      +      	|     +    	|        x       	|
-| /  Vector3        	|   x  	|      x      	|     x    	|        x       	| 
+|     o     | SQ o SQ | SQ o VQ | VQ o SQ | VQ o VQ | f64 o SQ | SQ o f64 | V3 o SQ | SQ o V3 | f64 o VQ | VQ o f64 |
+|:---------:|:-------:|:-------:|:-------:|:-------:|:--------:|:--------:|:-------:|:-------:|:--------:|:--------:|
+|     +     |    +    |    x    |    x    |    +    |     x    |     x    |    x    |    x    |     x    |     x    |
+|     +=    |    +    |    x    |    x    |    +    |     x    |     x    |    x    |    x    |     x    |     x    |
+|     -     |    +    |    x    |    x    |    +    |     x    |     x    |    x    |    x    |     x    |     x    |
+|     -=    |    +    |    x    |    x    |    +    |     x    |     x    |    x    |    x    |     x    |     x    |
+|     *     |    +    |    +    |    +    |    x    |     +    |     +    |    +    |    +    |     +    |     +    |
+|     *=    |    +    |    x    |    +    |    x    |     x    |     +    |    x    |    x    |     x    |     +    |
+|     /     |    +    |    x    |    +    |    x    |     +    |     +    |    +    |    x    |     x    |     +    |
+|     /=    |    +    |    x    |    +    |    x    |     x    |     +    |    x    |    x    |     x    |     +    |
+| >,<,>=,<= |    +    |    x    |    x    |    x    |     x    |     x    |    x    |    x    |     x    |     x    |
 
 To create scalar quanitity use:
 ```
-let q = Quantity::new() * (/* values in f64 and units */)
+use nbody::quantity::Units;
+...
+let q1 = 5.0 * Units::m; // 5 meters
+let q2 = 2.5 * Units::kms; // 2.5 kilometers per second
+let q3 = 1. * Units::m * Units::kg; 1 meter-kilogram
+let q4 = 1. * Units::G; // 1 gravitational constant
 ```
-For example
+
+To create vector quantity use:
 ```
-let q1 = Quantity::new() * 5.0 * ComplexUnit::m.pow(2); // 5 meters^2
-let q2 = Quantity::new() * ComplexUnit::kpc * 2.3; // 2.3 kiloparsec
-let q3 = Quantity::new() * 5.0 * ComplexUnit::J / (2.0 * ComplexUnit::s); // 5 joules per second
+let vq1 = Vector3::new(2., 4., 1.) * Units::m; // vector with components (2 meters, 4 meters, 1 meter)
 ```
-To create vector quantity you can use same principle with VectorQuantity instead (take operations above into consideration)

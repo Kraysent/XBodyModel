@@ -304,3 +304,20 @@ fn f64_div_squantity()
 
     assert_eq!(actual, expected);
 }
+
+#[test]
+fn squantity_cmp_squantity()
+{
+    let q1 = 2.0 * Units::m;
+    let q2 = 3.0 * Units::m;
+    let q3 = 2.0 * Units::m;
+
+    assert_eq!(q1 > q2, false);
+    assert_eq!(q2 > q1, true);
+    assert_eq!(q2 < q1, false);
+    assert_eq!(q1 < q2, true);
+    assert_eq!(q3 >= q2, false);
+    assert_eq!(q1 >= q3, true);
+    assert_eq!(q2 <= q1, false);    
+    assert_eq!(q1 <= q2, true);    
+}

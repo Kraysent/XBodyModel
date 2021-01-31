@@ -1,5 +1,5 @@
 use std::ops::{ Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign };
-use std::cmp::PartialEq;
+use std::cmp::{ PartialEq, PartialOrd, Ordering };
 use std::collections::HashMap;
 use crate::vector::Vector3;
 
@@ -155,6 +155,26 @@ impl Mul<Units> for f64
     }
 }
 
+impl Mul<Units> for Vector3
+{
+    type Output = VectorQuantity;
+
+    fn mul(self, rhs: Units) -> VectorQuantity
+    {
+        return VectorQuantity::from(self) * rhs;
+    }
+}
+
+impl Div<Units> for Vector3
+{
+    type Output = VectorQuantity;
+
+    fn div(self, rhs: Units) -> VectorQuantity
+    {
+        return VectorQuantity::from(self) /  rhs;
+    }
+}
+
 //-------------------------------ScalarQuantity-------------------------------//
 
 #[derive(Debug, PartialEq)]
@@ -244,18 +264,17 @@ impl Sub for ScalarQuantity
 
     fn sub(self, rhs: ScalarQuantity) -> ScalarQuantity 
     { 
-        if self.units == rhs.units
-        {
-            return ScalarQuantity
-            {
-                value: self.value - rhs.value,
-                units: self.units
-            };
-        }
-        else
+        if self.units != rhs.units
         {
             panic!("trying to sum incompatible units");
+            
         }
+
+        return ScalarQuantity
+        {
+            value: self.value - rhs.value,
+            units: self.units
+        };
     }
 }
 
@@ -472,6 +491,19 @@ impl Div<ScalarQuantity> for Vector3
     }
 }
 
+impl PartialOrd for ScalarQuantity
+{
+    fn partial_cmp(&self, rhs: &ScalarQuantity) -> Option<Ordering>
+    {
+        if self.units != rhs.units
+        {
+            panic!("trying to sum incompatible units");
+        }
+
+        return self.value.partial_cmp(&rhs.value);
+    }
+}
+
 //-------------------------------VectorQuantity-------------------------------//
 
 #[derive(Debug, PartialEq)]
@@ -510,18 +542,30 @@ impl Add for VectorQuantity
 
     fn add(self, rhs: VectorQuantity) -> VectorQuantity
     {
-        if self.units == rhs.units
+        if self.units != rhs.units
         {
-            return VectorQuantity
-            {
-                value: self.value + rhs.value,
-                units: self.units
-            };
+            panic!("trying to sum incompatible units");
+            
         }
-        else
+
+        return VectorQuantity
+        {
+            value: self.value + rhs.value,
+            units: self.units
+        };
+    }
+}
+
+impl AddAssign for VectorQuantity
+{
+    fn add_assign(&mut self, rhs: VectorQuantity)
+    {
+        if self.units != rhs.units
         {
             panic!("trying to sum incompatible units");
         }
+
+        self.value += rhs.value;
     }
 }
 
@@ -531,18 +575,30 @@ impl Sub for VectorQuantity
 
     fn sub(self, rhs: VectorQuantity) -> VectorQuantity
     {
-        if self.units == rhs.units
+        if self.units != rhs.units
         {
-            return VectorQuantity
-            {
-                value: self.value - rhs.value,
-                units: self.units
-            };
+            panic!("trying to sum incompatible units");
+            
         }
-        else
+
+        return VectorQuantity
+        {
+            value: self.value - rhs.value,
+            units: self.units
+        };
+    }
+}
+
+impl SubAssign for VectorQuantity
+{
+    fn sub_assign(&mut self, rhs: VectorQuantity)
+    {
+        if self.units != rhs.units
         {
             panic!("trying to sum incompatible units");
         }
+
+        self.value -= rhs.value;
     }
 }
 
@@ -572,16 +628,23 @@ impl Mul<ScalarQuantity> for VectorQuantity
 
     fn mul(self, rhs: ScalarQuantity) -> VectorQuantity
     {
-        let mut units = HashMap::new();
-        units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
-        units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
-        units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
+        let mut vq = VectorQuantity::from(self.value * rhs.value);
+        vq.units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
+        vq.units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
+        vq.units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
 
-        return VectorQuantity
-        {
-            value: self.value * rhs.value,
-            units
-        }
+        return vq;
+    }
+}
+
+impl MulAssign<ScalarQuantity> for VectorQuantity
+{
+    fn mul_assign(&mut self, rhs: ScalarQuantity)
+    {
+        self.value *= rhs.value;
+        self.units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
+        self.units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
+        self.units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
     }
 }
 
@@ -591,16 +654,23 @@ impl Div<ScalarQuantity> for VectorQuantity
 
     fn div(self, rhs: ScalarQuantity) -> VectorQuantity
     {
-        let mut units = HashMap::new();
-        units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
-        units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
-        units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
+        let mut vq = VectorQuantity::from(self.value / rhs.value);
+        vq.units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
+        vq.units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
+        vq.units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
 
-        return VectorQuantity
-        {
-            value: self.value / rhs.value,
-            units
-        }
+        return vq;
+    }
+}
+
+impl DivAssign<ScalarQuantity> for VectorQuantity
+{
+    fn div_assign(&mut self, rhs: ScalarQuantity)
+    {
+        self.value /= rhs.value;
+        self.units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
+        self.units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
+        self.units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
     }
 }
 
@@ -618,6 +688,14 @@ impl Mul<f64> for VectorQuantity
     }
 }
 
+impl MulAssign<f64> for VectorQuantity
+{
+    fn mul_assign(&mut self, rhs: f64) 
+    {
+        self.value *= rhs;
+    }
+}
+
 impl Div<f64> for VectorQuantity
 {
     type Output = VectorQuantity;
@@ -632,22 +710,20 @@ impl Div<f64> for VectorQuantity
     }
 }
 
-impl Mul<Units> for Vector3
+impl DivAssign<f64> for VectorQuantity
 {
-    type Output = VectorQuantity;
-
-    fn mul(self, rhs: Units) -> VectorQuantity
+    fn div_assign(&mut self, rhs: f64) 
     {
-        return VectorQuantity::from(self) * rhs;
+        self.value /= rhs;
     }
 }
 
-impl Div<Units> for Vector3
+impl Mul<VectorQuantity> for f64
 {
     type Output = VectorQuantity;
 
-    fn div(self, rhs: Units) -> VectorQuantity
+    fn mul(self, rhs: VectorQuantity) -> VectorQuantity
     {
-        return VectorQuantity::from(self) /  rhs;
+        return rhs * self;
     }
 }
