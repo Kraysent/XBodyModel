@@ -1,20 +1,43 @@
 use std::cmp::PartialEq;
-use crate::vector::Vector3;
+use crate::quantity::*;
 
 pub struct Particle
 {
-    pub position: Vector3,
-    pub velocity: Vector3,
-    pub mass: f64
+    pub position: VectorQuantity,
+    pub velocity: VectorQuantity,
+    pub mass: ScalarQuantity
 }
 
 impl Particle
 {
-    pub fn new(position: Vector3, velocity: Vector3, mass: f64) -> Result<Particle, &'static str>
+    pub fn new(position: VectorQuantity, velocity: VectorQuantity, mass: ScalarQuantity) 
+        -> Result<Particle, &'static str>
     {
-        if mass <= 0.0
+        let check_pos = |pos: &VectorQuantity| -> bool 
         {
-            return Err("particle mass is non-positive");
+            return pos.is_compatible(Units::m.convert());
+        };
+        let check_vel = |vel: &VectorQuantity| -> bool
+        {
+            return vel.is_compatible(Units::ms.convert());
+        };
+        let check_mass = |m: &ScalarQuantity| -> bool
+        {
+            if m.is_compatible(Units::kg.convert()) {
+                return *m >= 0. * Units::kg;
+            }
+
+            return false;
+        };
+        
+        if !check_pos(&position) {
+            return Err("incorrect position");
+        }
+        if !check_vel(&velocity) {
+            return Err("incorrect velocity");
+        }
+        if !check_mass(&mass) {
+            return Err("incorrect mass");
         }
 
         return Ok(Particle {position, velocity, mass});

@@ -21,4 +21,5 @@
 
 ## Thoughts
 * Maybe timestep should be a property of integrator and it should evolve on some other time provided to the `Integrator.evolve` function
-* It would be good to create a way that forces integrators and generators to use quantities of specific types; for example, radius of the Plummer sphere **must** be in meters (or equivalent) and in nothing else. 
+* It would be good to create a way that forces integrators and generators to use quantities of specific types; for example, radius of the Plummer sphere **must** be in meters (or equivalent) and in nothing else. If it would be in compile-time - it would be great.
+* Probably I should move `SI` struct to `core` module and make something like `System` trait which should somehow deal with different systems like SI, CGS and so on 

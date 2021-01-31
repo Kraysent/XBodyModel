@@ -178,9 +178,9 @@ impl Plummer
         for i in 0..positions.len()
         {
             output.add_particle(Particle::new(
-                positions[i],
-                velocities[i],
-                masses[i]
+                positions[i] * Units::m,
+                velocities[i] * Units::ms,
+                masses[i] * Units::kg
             )?);
         }
 

@@ -47,6 +47,7 @@ pub enum Units
     m, pc, kpc,
     s, yr, Myr,
     kg, MSun,
+    ms, kms,
     J,
     G
 }
@@ -73,6 +74,10 @@ impl Units
             Self::kg => 1.0 * SI::Kilogram,
             // mass of the sun
             Self::MSun => 1.989e+30 * SI::Kilogram,
+            // meters per second
+            Self::ms => 1. * SI::Meter * SI::Second.pow(-1.),
+            // kilometers per second
+            Self::kms => 1e+3 * SI::Meter * SI::Second.pow(-1.),
             // joule
             Self::J => 1.0 * SI::Kilogram * SI::Meter.pow(2.) * SI::Second.pow(-2.),
             // gravitational constant
@@ -557,6 +562,26 @@ impl VectorQuantity
             value: self.value.mag(),
             units: self.units
         }
+    }
+
+    pub fn value_in_q(&self, quantity: ScalarQuantity) -> Vector3
+    {
+        if quantity.units != self.units
+        {
+            panic!("trying to take value in incompatible units");
+        }
+
+        return self.value / quantity.value;
+    }
+
+    pub fn value_in(&self, unit: Units) -> Vector3
+    {
+        return self.value_in_q(unit.convert());
+    }
+
+    pub fn is_compatible(&self, quantity: ScalarQuantity) -> bool
+    {
+        return self.units == quantity.units;
     }
 }
 

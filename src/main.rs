@@ -54,9 +54,13 @@ fn main()
 
 fn print_particle(p: &Particle)
 {
+    let pos = p.position.value_in(Units::m);
+    let vel = p.velocity.value_in(Units::ms);
+    let mass = p.mass.value_in(Units::kg);
+    
     println!("{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}", 
-                p.position.x, p.position.y, p.position.z,
-                p.velocity.x, p.velocity.y, p.velocity.z,
-                p.mass
+                pos.x, pos.y, pos.z,
+                vel.x, vel.y, vel.z,
+                mass
             );
 }
