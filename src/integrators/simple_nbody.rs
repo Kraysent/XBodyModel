@@ -16,9 +16,15 @@ impl SimpleNBody
 {
     pub fn new(particle_set: &ParticleSet) -> Result<SimpleNBody, &'static str>
     {  
-        let positions = particle_set.particles.iter().map(|p| -> Vector3 { p.position.value_in(Units::m) }).collect(); 
-        let velocities = particle_set.particles.iter().map(|p| -> Vector3 { p.velocity.value_in(Units::ms) }).collect(); 
-        let masses = particle_set.particles.iter().map(|p| -> f64 { p.mass.value_in(Units::kg) }).collect(); 
+        let positions = particle_set.particles.iter().map(|p| -> Vector3 { 
+            p.get_position().value_in(Units::m) 
+        }).collect(); 
+        let velocities = particle_set.particles.iter().map(|p| -> Vector3 { 
+            p.get_velocity().value_in(Units::ms) 
+        }).collect();
+        let masses = particle_set.particles.iter().map(|p| -> f64 { 
+            p.get_mass().value_in(Units::kg) 
+        }).collect(); 
 
         return Ok(SimpleNBody { 
             positions, 
