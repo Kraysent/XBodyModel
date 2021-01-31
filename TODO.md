@@ -2,7 +2,6 @@
 ### Nearest:
 * add epsilon (smoothing factor) to forces count in SimpleNBody generator
 * add Runge-Kutta method for numerical integration in SimpleNBody (most likely would use `enum` for this)
-* use quantities in computations
 * create tests for basic `ScalarQuantity` and `VectorQuantity` functions
 * implement some basic mathematical operations on quantitites (including sqrt)
 

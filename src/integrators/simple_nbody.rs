@@ -1,6 +1,6 @@
 use crate::particles::{ParticleSet, Particle};
 use crate::vector::Vector3;
-use crate::quantity::Units;
+use crate::quantity::{ Units, ScalarQuantity };
 use super::Integrator;
 
 #[allow(non_snake_case)]
@@ -32,24 +32,6 @@ impl SimpleNBody
             masses,
             G: Units::G.convert().value_in_q(Units::m.pow(3.) * Units::kg.pow(-1.) * Units::s.pow(-2.)) 
         });
-    }
-
-    pub fn get_state(&self) -> Result<ParticleSet, &'static str>
-    {
-        let mut result = ParticleSet::new()?;
-
-        for i in 0..self.positions.len()
-        {
-            let p = Particle::new(
-                self.positions[i] * Units::m,
-                self.velocities[i] * Units::ms,
-                self.masses[i] * Units::kg
-            )?;
-
-            result.add_particle(p);
-        }
-
-        return Ok(result);
     }
 
     fn get_force(&self, pos1: Vector3, pos2: Vector3, m1: f64, m2: f64) -> Vector3
@@ -95,8 +77,9 @@ impl SimpleNBody
 
 impl Integrator for SimpleNBody
 {
-    fn integrate(&mut self, dt: f64) 
+    fn integrate(&mut self, dt: ScalarQuantity) 
     { 
+        let dt = dt.value_in(Units::s);
         let mut force: Vector3;
         let mut dvs = vec![Vector3::null_vector(); self.positions.len()];
         let mut drs = vec![Vector3::null_vector(); self.positions.len()];
@@ -116,5 +99,23 @@ impl Integrator for SimpleNBody
         }
 
         self.update_positions(drs);
+    }
+
+    fn get_state(&self) -> Result<ParticleSet, &'static str>
+    {
+        let mut result = ParticleSet::new()?;
+
+        for i in 0..self.positions.len()
+        {
+            let p = Particle::new(
+                self.positions[i] * Units::m,
+                self.velocities[i] * Units::ms,
+                self.masses[i] * Units::kg
+            )?;
+
+            result.add_particle(p);
+        }
+
+        return Ok(result);
     }
 }
