@@ -321,3 +321,13 @@ fn squantity_cmp_squantity()
     assert_eq!(q2 <= q1, false);    
     assert_eq!(q1 <= q2, true);    
 }
+
+#[test]
+#[should_panic]
+fn squantity_cmp_incompatible_squantity()
+{
+    let q1 = 2.0 * Units::m;
+    let q2 = 3.0 * Units::s;
+
+    let _a = q1 > q2;
+}

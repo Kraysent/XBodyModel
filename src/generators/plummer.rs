@@ -5,30 +5,61 @@ use rand::prelude::*;
 use rand::distributions::{ Standard };
 use rand_distr::{ Normal, Distribution };
 use std::f64::consts::PI;
+use crate::quantity::{ ScalarQuantity, Units };
 
-pub const G: f64 = 6.67e-11;
-
+#[allow(non_snake_case)]
 pub struct Plummer
 {
     plummer_radius: f64,
     n: usize,
     m0: f64,
+    G: f64
 }
 
 impl Plummer
 {
-    pub fn new(plummer_radius: f64, n: usize, m0: Option<f64>) -> Result<Plummer, &'static str>
+    pub fn new(r: ScalarQuantity, n: usize, m: ScalarQuantity) -> Result<Plummer, &'static str>
     {
-        if plummer_radius <= 0.0
+        let rad_check = |rad: &ScalarQuantity| -> bool
         {
-            return Err("radius is non-positive");
-        }
-        else if n == 0
+            if rad.is_compatible(Units::m.convert()) {
+                *rad >= (0. * Units::m)
+            } else {
+                false
+            }
+        };
+        let n_check = |number: usize| -> bool
         {
-            return Err("no particles given");
+            number != 0
+        };
+        let m_check = |mass: &ScalarQuantity| -> bool
+        {
+            if mass.is_compatible(Units::kg.convert()) {
+                *mass > (0.0 * Units::kg)
+            } else {
+                false
+            }
+        };
+
+        if !rad_check(&r)
+        {
+            return Err("incorrect radius");
         }
-        
-        return Ok(Plummer { plummer_radius, n, m0: m0.unwrap_or(1.0) });
+        if !n_check(n)
+        {
+            return Err("incorrect number of particles");
+        }
+        if !m_check(&m)
+        {
+            return Err("incorrect mass");
+        }
+
+        return Ok(Plummer { 
+            plummer_radius: r.value_in(Units::m), 
+            n, 
+            m0: m.value_in(Units::kg),
+            G: Units::G.convert().value_in_q(Units::m.pow(3.) * Units::kg.pow(-1.) * Units::s.pow(-2.))
+        });
     }
 
     fn rho(&self, r: f64) -> f64
@@ -112,19 +143,48 @@ impl Plummer
         return output;
     }
 
-    fn generate_velocity(&self, r: f64) -> Vector3
+    fn generate_velocities(&self, positions: Vec<f64>) -> Vec<Vector3>
     {
-        let disp = G * self.m0 / (6.0 * (r.powi(2) + self.plummer_radius.powi(2)).sqrt());
-        let normal_distr = Normal::new(0.0, disp.sqrt()).unwrap();
         let mut uniform_distr = StdRng::from_entropy();
+        let mut output = Vec::new();
 
-        let mag = normal_distr.sample(&mut rand::thread_rng()).abs() / 2.0;
-        let phi: f64 = uniform_distr.sample(Standard);
-        let phi = phi * 2.0 * PI;
-        let theta: f64 = uniform_distr.sample(Standard);
-        let theta = theta * PI;
+        for r in positions
+        {
+            let disp = self.G * self.m0 / (6.0 * (r.powi(2) + self.plummer_radius.powi(2)).sqrt());
+            let normal_distr = Normal::new(0.0, disp.sqrt()).unwrap();
+    
+            let mag = normal_distr.sample(&mut rand::thread_rng()).abs() / 2.0;
+            let phi: f64 = uniform_distr.sample(Standard);
+            let phi = phi * 2.0 * PI;
+            let theta: f64 = uniform_distr.sample(Standard);
+            let theta = theta * PI;
 
-        return Self::spherical_to_cartesian(mag, phi, theta);
+            output.push(Self::spherical_to_cartesian(mag, phi, theta));
+        }
+        
+        return output;
+    }
+
+    fn generate_particles(positions: Vec<Vector3>, velocities: Vec<Vector3>, masses: Vec<f64>) 
+        -> Result<ParticleSet, &'static str>
+    {
+        if (positions.len() != velocities.len()) || (positions.len() != masses.len())
+        {
+            return Err("generation of positions, velocities or masses went wrong");
+        }
+
+        let mut output = ParticleSet::new()?;
+
+        for i in 0..positions.len()
+        {
+            output.add_particle(Particle::new(
+                positions[i],
+                velocities[i],
+                masses[i]
+            )?);
+        }
+
+        return Ok(output);
     }
 }
 
@@ -132,26 +192,12 @@ impl Generator for Plummer
 {
     fn generate(&self) -> Result<ParticleSet, &'static str> 
     {
-        let mut output = ParticleSet::new()?;
         let positions = self.generate_positions();
+        let velocities = self.generate_velocities(
+            positions.iter().map(|r| -> f64 { r.mag() }).collect()
+        );
         let masses = vec![self.m0 / (self.n as f64); self.n];
 
-        if positions.len() != masses.len()
-        {
-            return Err("generation of positions or masses went wrong");
-        }
-
-        for i in 0..positions.len()
-        {
-            output.particles.push(
-                Particle::new(
-                    positions[i], 
-                    self.generate_velocity(positions[i].mag()), 
-                    masses[i]
-                )?
-            );
-        }
-
-        return Ok(output);
+        return Self::generate_particles(positions, velocities, masses);
     }
 }

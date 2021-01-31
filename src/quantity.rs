@@ -1,6 +1,7 @@
 use std::ops::{ Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign };
 use std::cmp::{ PartialEq, PartialOrd, Ordering };
 use std::collections::HashMap;
+use std::fmt::{ Display, Formatter, Result };
 use crate::vector::Vector3;
 
 //-------------------------------SI-------------------------------//
@@ -213,7 +214,7 @@ impl ScalarQuantity
         return res;
     }
 
-    pub fn value_in(&self, quantity: ScalarQuantity) -> f64
+    pub fn value_in_q(&self, quantity: ScalarQuantity) -> f64
     {
         if quantity.units != self.units
         {
@@ -221,6 +222,29 @@ impl ScalarQuantity
         }
 
         return self.value / quantity.value;
+    }
+
+    pub fn value_in(&self, unit: Units) -> f64
+    {
+        return self.value_in_q(unit.convert());
+    }
+
+    pub fn is_compatible(&self, quantity: ScalarQuantity) -> bool
+    {
+        return self.units == quantity.units;
+    }
+}
+
+impl Display for ScalarQuantity
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result
+    {
+        return write!(f, "{:e} m^{} s^{} kg^{}", 
+            self.value,
+            self.units[&SI::Meter],
+            self.units[&SI::Second],
+            self.units[&SI::Kilogram]
+        );
     }
 }
 

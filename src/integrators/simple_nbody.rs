@@ -1,76 +1,114 @@
 use crate::particles::{ParticleSet, Particle};
 use crate::vector::Vector3;
+use crate::quantity::Units;
 use super::Integrator;
 
-pub const G: f64 = 6.67e-11;
-
-pub struct SimpleNBody<'a>
+#[allow(non_snake_case)]
+pub struct SimpleNBody
 {
-    pub particles: &'a mut ParticleSet,
+    positions: Vec<Vector3>,
+    velocities: Vec<Vector3>,
+    masses: Vec<f64>,
+    G: f64,
 }
 
-impl<'a> SimpleNBody<'a>
+impl SimpleNBody
 {
-    pub fn new(particles: &'a mut ParticleSet) -> Result<SimpleNBody, &'static str>
-    {
-        return Ok(SimpleNBody { particles });
+    pub fn new(particle_set: &ParticleSet) -> Result<SimpleNBody, &'static str>
+    {  
+        let positions = particle_set.particles.iter().map(|p| -> Vector3 { p.position }).collect(); 
+        let velocities = particle_set.particles.iter().map(|p| -> Vector3 { p.velocity }).collect(); 
+        let masses = particle_set.particles.iter().map(|p| -> f64 { p.mass }).collect(); 
+
+        return Ok(SimpleNBody { 
+            positions, 
+            velocities,
+            masses,
+            G: Units::G.convert().value_in_q(Units::m.pow(3.) * Units::kg.pow(-1.) * Units::s.pow(-2.)) 
+        });
     }
 
-    fn get_force(p1: &Particle, p2: &Particle) -> Vector3
+    pub fn get_state(&self) -> Result<ParticleSet, &'static str>
     {
-        let dist = p2.position - p1.position;
+        let mut result = ParticleSet::new()?;
 
-        return dist.unit() * G * p1.mass * p2.mass / (dist.dot(&dist));
+        for i in 0..self.positions.len()
+        {
+            let p = Particle::new(
+                self.positions[i],
+                self.velocities[i],
+                self.masses[i]
+            )?;
+
+            result.add_particle(p);
+        }
+
+        return Ok(result);
+    }
+
+    fn get_force(&self, pos1: Vector3, pos2: Vector3, m1: f64, m2: f64) -> Vector3
+    {
+        let dist = pos2 - pos1;
+
+        return self.G * m1 * m2 / (dist.dot(&dist)) * dist.unit();
+    }
+
+    fn update_velocities(&mut self, dvs: Vec<Vector3>)
+    {
+        for i in 0..self.velocities.len()
+        {
+            self.velocities[i] += dvs[i];
+        }
+    }
+
+    fn update_positions(&mut self, drs: Vec<Vector3>)
+    {
+        for i in 0..self.positions.len()
+        {
+            self.positions[i] += drs[i];
+        }
+    }
+
+    fn get_force_to_particle(&self, pos: Vector3, m: f64) -> Vector3
+    {
+        let mut result = Vector3::null_vector();
+
+        for i in 0..self.positions.len()
+        {
+            if self.positions[i] == pos
+            {
+                continue;
+            }
+
+            result += self.get_force(self.positions[i], pos, self.masses[i], m);
+        }
+
+        return result;
     }
 }
 
-impl<'a> Integrator for SimpleNBody<'a>
+impl Integrator for SimpleNBody
 {
     fn integrate(&mut self, dt: f64) 
     { 
         let mut force: Vector3;
-        let particle_set = &self.particles.particles;
-        let mut dvs = vec![Vector3::null_vector(); particle_set.len()];
-        let mut drs = vec![Vector3::null_vector(); particle_set.len()];
+        let mut dvs = vec![Vector3::null_vector(); self.positions.len()];
+        let mut drs = vec![Vector3::null_vector(); self.positions.len()];
 
-        for i in 0..particle_set.len()
+        for i in 0..self.positions.len()
         {
-            force = Vector3::null_vector();
+            force = self.get_force_to_particle(self.positions[i], self.masses[i]);
 
-            for j in 0..particle_set.len()
-            {
-                if particle_set[i] == particle_set[j]
-                {
-                    continue;
-                }
-
-                force += SimpleNBody::get_force(&particle_set[i], &particle_set[j]);
-            }
-
-            dvs[i] = force / particle_set[i].mass * dt;
+            dvs[i] = force / self.masses[i] * dt;
         }
 
-        // update velocities
-        let particle_set = &mut self.particles.particles;
+        self.update_velocities(dvs);
 
-        for i in 0..particle_set.len()
+        for i in 0..self.positions.len()
         {
-            particle_set[i].velocity += dvs[i];
+            drs[i] = self.velocities[i] * dt;
         }
 
-        // update positions 
-        let particle_set = &self.particles.particles;
-
-        for i in 0..particle_set.len()
-        {
-            drs[i] = particle_set[i].velocity * dt;
-        }
-
-        let particle_set = &mut self.particles.particles;
-
-        for i in 0..particle_set.len()
-        {
-            particle_set[i].position += drs[i];
-        }
+        self.update_positions(drs);
     }
 }

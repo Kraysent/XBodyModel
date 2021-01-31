@@ -11,11 +11,7 @@ fn main()
     let m = 1e+9 * Units::MSun;
     let n = 100;
 
-    let plummer = Plummer::new(
-        r.value_in(Units::m.convert()), 
-        n, 
-        Some(m.value_in(Units::kg.convert()))
-    ).unwrap_or_else(|err| 
+    let plummer = Plummer::new(r, n, m).unwrap_or_else(|err| 
     {
         eprintln!("Error during initialisation of particles: {}", err);
         process::exit(1);
@@ -46,11 +42,11 @@ fn main()
 
         for _ in 0..1000
         {
-            integr.integrate(dt.value_in(Units::s.convert()));
+            integr.integrate(dt.value_in(Units::s));
         }
     }
 
-    for p in integr.particles.particles.iter()
+    for p in integr.get_state().unwrap().particles
     {
         print_particle(&p);
     }
@@ -58,7 +54,7 @@ fn main()
 
 fn print_particle(p: &Particle)
 {
-    println!("{} {} {} {} {} {} {}", 
+    println!("{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}\t{:.5e}", 
                 p.position.x, p.position.y, p.position.z,
                 p.velocity.x, p.velocity.y, p.velocity.z,
                 p.mass
