@@ -1,7 +1,7 @@
 ## These are things that need implementation:
 ### Nearest:
-* add epsilon (smoothing factor) to forces count in SimpleNBody generator
-* add Runge-Kutta method for numerical integration in SimpleNBody (most likely would use `enum` for this)
+* add epsilon (smoothing factor) to forces count in `SimpleNBody` generator
+* add Runge-Kutta method for numerical integration in `SimpleNBody` (most likely would use `enum` for this)
 * create tests for basic `ScalarQuantity` and `VectorQuantity` functions
 * implement custom error class in order to get rid of `&'static str` in each `Result` 
 
@@ -11,7 +11,7 @@
 * use C++ code to increase perfomance 
 * use GPU (primarily, CUDA or OpenCL) to increase perfomance
 * add CLI
-* add some UI (probably, using python's matplotlib or SDL in C++)
+* add some UI (probably, using python's matplotlib, SDL in C++ or even REST API)
 * add unit tests for integrators and generators
 * add documentation
 

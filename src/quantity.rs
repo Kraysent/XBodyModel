@@ -5,7 +5,7 @@ use crate::vector::Vector3;
 
 //-------------------------------SI-------------------------------//
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 struct SI
 {
     meters: f64,
@@ -136,7 +136,7 @@ impl Units
             // mass of the sun
             Self::MSun => 1.989e+30 * SI::new(0., 0., 1.),
             // meters per second
-            Self::ms => 1. * SI::new(1., 0., -1.),
+            Self::ms => 1. * SI::new(1., -1., 0.),
             // kilometers per second
             Self::kms => 1e+3 * SI::new(1., 0., -1.),
             // joule
@@ -244,7 +244,7 @@ impl Div<Units> for Vector3
 
 //-------------------------------ScalarQuantity-------------------------------//
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct ScalarQuantity
 {
     value: f64,
@@ -330,7 +330,7 @@ impl AddAssign for ScalarQuantity
     {
         if self.units != rhs.units
         {
-            panic!("trying to sun incompatible units");
+            panic!("trying to sum incompatible units");
         }
 
         self.value += rhs.value;
@@ -363,7 +363,7 @@ impl SubAssign for ScalarQuantity
     {
         if self.units != rhs.units
         {
-            panic!("trying to sun incompatible units");
+            panic!("trying to sum incompatible units");
         }
 
         self.value -= rhs.value;
@@ -573,7 +573,7 @@ impl PartialOrd for ScalarQuantity
 
 //-------------------------------VectorQuantity-------------------------------//
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 pub struct VectorQuantity
 {
     value: Vector3,

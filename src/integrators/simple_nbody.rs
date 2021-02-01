@@ -3,7 +3,7 @@ use crate::vector::Vector3;
 use crate::quantity::{ Units, ScalarQuantity };
 use super::Integrator;
 
-/// Integrator that uses direct summation and Euler method of numerical integration.
+/// Integrator that uses direct summation and Euler method for numerical integration.
 #[allow(non_snake_case)]
 pub struct SimpleNBody
 {

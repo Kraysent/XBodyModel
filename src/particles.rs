@@ -85,19 +85,19 @@ impl Particle
         return Ok(());
     }
 
-    pub fn get_position(&self) -> &VectorQuantity
+    pub fn get_position(&self) -> VectorQuantity
     {
-        return &self.position;
+        return self.position;
     }
 
-    pub fn get_velocity(&self) -> &VectorQuantity
+    pub fn get_velocity(&self) -> VectorQuantity
     {
-        return &self.velocity;
+        return self.velocity;
     }
 
-    pub fn get_mass(&self) -> &ScalarQuantity
+    pub fn get_mass(&self) -> ScalarQuantity
     {
-        return &self.mass;
+        return self.mass;
     }
 }
 
@@ -111,6 +111,8 @@ impl PartialEq for Particle
     }
 }
 
+/// Represents the set of particles; it is needed in order 
+/// to be able to calculate things like energies and so on
 pub struct ParticleSet
 {
     pub particles: Vec<Particle>
@@ -118,21 +120,69 @@ pub struct ParticleSet
 
 impl ParticleSet
 {
+    /// Creates new instance of a `ParticleSet`
+    /// 
+    /// `return`: `ParticleSet` or the error with description
     pub fn new() -> Result<ParticleSet, &'static str>
     {
         return Ok(ParticleSet{ particles: Vec::new() });
     }
 
+    /// Adds one particle to the set
+    /// 
+    /// `p`: given particle
     pub fn add_particle(&mut self, p: Particle)
     {
         self.particles.push(p);
     }
 
+    /// Adds one set of particles into another
+    /// 
+    /// `ps`: given set of particles
     pub fn add_particles(&mut self, ps: ParticleSet)
     {
         for p in ps.particles
         {
             self.add_particle(p);
         }
+    }
+
+    /// Returns kinetic energy of the particle set;
+    /// Complexity: O(N)
+    /// `return`: ScalarQuantity equivalent to Units::J
+    pub fn get_kinetic_energy(&self) -> ScalarQuantity
+    {
+        let mut result = 0. * Units::J;
+
+        for p in self.particles.iter()
+        {
+            result += p.get_mass() * p.get_velocity().mag().pow(2.) / 2.;
+        }
+
+        return result;
+    }
+
+    /// Returns potential energy of the particle set;
+    /// Complexity: O(N^2)
+    /// `return`: ScalarQuantity equivalent to Units::J
+    pub fn get_potential_energy(&self) -> ScalarQuantity
+    {
+        let mut result = 0. * Units::J;
+        let set = &self.particles;
+
+        for i in 0..set.len()
+        {
+            for j in 0..set.len()
+            {
+                if i == j {
+                    continue;
+                }
+
+                let r = (set[i].get_position() - set[j].get_position()).mag();
+                result -= Units::G * set[i].get_mass() * set[j].get_mass() / r;
+            }
+        }
+
+        return result;
     }
 }

@@ -35,7 +35,7 @@ fn main()
         process::exit(1);
     });
 
-    let dt = Units::yr * 1.0;
+    let dt = 1.0 * Units::yr;
 
     {
         let _p = Profiler::new(None);
