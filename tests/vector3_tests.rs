@@ -1,4 +1,4 @@
-use nbody::vector::Vector3;
+use xbody_model::vector::Vector3;
 
 #[test]
 fn vector3_add_vector3()

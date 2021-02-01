@@ -1,5 +1,5 @@
-use nbody::quantity::Units;
-use nbody::vector::Vector3;
+use xbody_model::quantity::Units;
+use xbody_model::vector::Vector3;
 
 #[test]
 fn vquantity_mul_squantity()

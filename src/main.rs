@@ -1,8 +1,8 @@
-use nbody::generators::{ Generator, plummer::Plummer };
-use nbody::integrators::{ Integrator, simple_nbody::SimpleNBody };
-use nbody::particles::Particle;
-use nbody::profiler::Profiler;
-use nbody::quantity::Units;
+use xbody_model::generators::{ Generator, plummer::Plummer };
+use xbody_model::integrators::{ Integrator, simple_nbody::SimpleNBody };
+use xbody_model::particles::Particle;
+use xbody_model::profiler::Profiler;
+use xbody_model::quantity::Units;
 use std::process;
 
 fn main()
@@ -42,7 +42,7 @@ fn main()
 
         for _ in 0..1000
         {
-            integr.integrate(dt.value_in(Units::s));
+            integr.integrate(&dt);
         }
     }
 

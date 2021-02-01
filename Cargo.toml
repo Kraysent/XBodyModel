@@ -1,5 +1,5 @@
 [package]
-name = "nbody"
+name = "xbody_model"
 version = "0.1.0"
 authors = ["Kraysent <kraysent@gmail.com>"]
 edition = "2018"

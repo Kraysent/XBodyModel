@@ -79,7 +79,7 @@ impl SimpleNBody
 
 impl Integrator for SimpleNBody
 {
-    fn integrate(&mut self, dt: ScalarQuantity) 
+    fn integrate(&mut self, dt: &ScalarQuantity) 
     { 
         let dt = dt.value_in(Units::s);
         let mut force: Vector3;
