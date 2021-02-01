@@ -1,27 +1,88 @@
 use std::ops::{ Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign };
 use std::cmp::{ PartialEq, PartialOrd, Ordering };
-use std::collections::HashMap;
 use std::fmt::{ Display, Formatter, Result };
 use crate::vector::Vector3;
 
 //-------------------------------SI-------------------------------//
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-enum SI
+#[derive(PartialEq, Debug)]
+struct SI
 {
-    Meter,
-    Second,
-    Kilogram
+    meters: f64,
+    seconds: f64,
+    kilograms: f64
 }
 
 impl SI
 {
-    pub fn pow(self, x: f64) -> ScalarQuantity
+    pub fn new(meters: f64, seconds: f64, kilograms: f64) -> SI
     {
-        let mut a = ScalarQuantity::new();
-        a.units.insert(self, x);
+        return SI { meters, seconds, kilograms };
+    }
 
-        return a;
+    pub fn empty() -> SI
+    {
+        return SI { meters: 0., seconds: 0., kilograms: 0. };
+    }
+
+    pub fn pow(&self, x: f64) -> SI
+    {
+        return SI 
+        { 
+            meters: self.meters * x, 
+            seconds: self.seconds * x, 
+            kilograms: self.kilograms * x
+        };
+    }
+}
+
+impl Add for SI
+{
+    type Output = SI;
+
+    fn add(self, rhs: SI) -> SI
+    {
+        return SI
+        {
+            meters: self.meters + rhs.meters,
+            seconds: self.seconds + rhs.seconds,
+            kilograms: self.kilograms + rhs.kilograms,
+        }
+    }
+}
+
+impl AddAssign for SI
+{
+    fn add_assign(&mut self, rhs: SI)
+    {
+        self.meters += rhs.meters;
+        self.seconds += rhs.seconds;
+        self.kilograms += rhs.kilograms;        
+    }
+}
+
+impl Sub for SI
+{
+    type Output = SI;
+
+    fn sub(self, rhs: SI) -> SI
+    {
+        return SI
+        {
+            meters: self.meters - rhs.meters,
+            seconds: self.seconds - rhs.seconds,
+            kilograms: self.kilograms - rhs.kilograms,
+        }
+    }
+}
+
+impl SubAssign for SI
+{
+    fn sub_assign(&mut self, rhs: SI)
+    {
+        self.meters -= rhs.meters;
+        self.seconds -= rhs.seconds;
+        self.kilograms -= rhs.kilograms;        
     }
 }
 
@@ -31,11 +92,11 @@ impl Mul<SI> for f64
 
     fn mul(self, rhs: SI) -> ScalarQuantity
     {
-        let mut sq = ScalarQuantity::new();
-        sq.units.insert(rhs, 1.);
-        sq.value = self;
-
-        return sq;
+        return ScalarQuantity
+        {
+            value: self,
+            units: rhs
+        };
     }
 }
 
@@ -59,29 +120,29 @@ impl Units
         match self
         {
             // meter
-            Self::m => 1.0 * SI::Meter,
+            Self::m => 1.0 * SI::new(1., 0., 0.),
             // parsec
-            Self::pc => 3.086e+16 * SI::Meter,
+            Self::pc => 3.086e+16 * SI::new(1., 0., 0.),
             // kiloparsec
-            Self::kpc => 3.086e+19 * SI::Meter,
+            Self::kpc => 3.086e+19 * SI::new(1., 0., 0.),
             // second
-            Self::s => 1.0 * SI::Second,
+            Self::s => 1.0 * SI::new(0., 1., 0.),
             // year
-            Self::yr => 365.0 * 86400.0 * SI::Second,
+            Self::yr => 365.0 * 86400.0 * SI::new(0., 1., 0.),
             // megayear
-            Self::Myr => 1e+6 * 365.0 * 86400.0 * SI::Second,
+            Self::Myr => 1e+6 * 365.0 * 86400.0 * SI::new(0., 1., 0.),
             // kilogram
-            Self::kg => 1.0 * SI::Kilogram,
+            Self::kg => 1.0 * SI::new(0., 0., 1.),
             // mass of the sun
-            Self::MSun => 1.989e+30 * SI::Kilogram,
+            Self::MSun => 1.989e+30 * SI::new(0., 0., 1.),
             // meters per second
-            Self::ms => 1. * SI::Meter * SI::Second.pow(-1.),
+            Self::ms => 1. * SI::new(1., 0., -1.),
             // kilometers per second
-            Self::kms => 1e+3 * SI::Meter * SI::Second.pow(-1.),
+            Self::kms => 1e+3 * SI::new(1., 0., -1.),
             // joule
-            Self::J => 1.0 * SI::Kilogram * SI::Meter.pow(2.) * SI::Second.pow(-2.),
+            Self::J => 1.0 * SI::new(2., -2., 1.),
             // gravitational constant
-            Self::G => 6.67e-11 * SI::Meter.pow(3.) * SI::Kilogram.pow(-1.) * SI::Second.pow(-2.),
+            Self::G => 6.67e-11 * SI::new(3., -2., -1.),
         }
     }
 
@@ -183,40 +244,31 @@ impl Div<Units> for Vector3
 
 //-------------------------------ScalarQuantity-------------------------------//
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct ScalarQuantity
 {
     value: f64,
-    units: HashMap<SI, f64>
+    units: SI
 }
 
 impl ScalarQuantity
 {
     pub fn new() -> ScalarQuantity
     {
-        let mut units = HashMap::new();
-        units.insert(SI::Meter, 0.);
-        units.insert(SI::Second, 0.);
-        units.insert(SI::Kilogram, 0.);
-
         return ScalarQuantity 
         {
             value: 1.0,
-            units
+            units: SI::empty()
         };
     }
 
     pub fn pow(&self, x: f64) -> ScalarQuantity
     {
-        let mut res = ScalarQuantity::new();
-
-        res.units.insert(SI::Meter, self.units[&SI::Meter] * x);
-        res.units.insert(SI::Second, self.units[&SI::Second] * x);
-        res.units.insert(SI::Kilogram, self.units[&SI::Kilogram] * x);
-
-        res = res * self.value.powf(x);
-
-        return res;
+        return ScalarQuantity
+        {
+            value: self.value.powf(x),
+            units: self.units.pow(x)
+        };
     }
 
     pub fn value_in_q(&self, quantity: ScalarQuantity) -> f64
@@ -246,9 +298,9 @@ impl Display for ScalarQuantity
     {
         return write!(f, "{:e} m^{} s^{} kg^{}", 
             self.value,
-            self.units[&SI::Meter],
-            self.units[&SI::Second],
-            self.units[&SI::Kilogram]
+            self.units.meters,
+            self.units.seconds,
+            self.units.kilograms
         );
     }
 }
@@ -259,18 +311,16 @@ impl Add for ScalarQuantity
 
     fn add(self, rhs: ScalarQuantity) -> ScalarQuantity 
     { 
-        if self.units == rhs.units
-        {
-            return ScalarQuantity
-            {
-                value: self.value + rhs.value,
-                units: self.units
-            };
-        }
-        else
+        if self.units != rhs.units
         {
             panic!("trying to sum incompatible units");
         }
+        
+        return ScalarQuantity
+        {
+            value: self.value + rhs.value,
+            units: self.units
+        };
     }
 }
 
@@ -326,14 +376,10 @@ impl Mul for ScalarQuantity
 
     fn mul(self, rhs: ScalarQuantity) -> ScalarQuantity
     {
-        let mut res = ScalarQuantity::new();
-
-        res.units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
-        res.units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
-        res.units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
-        res.value = self.value * rhs.value;
-
-        return res;
+        return ScalarQuantity {
+            value: self.value * rhs.value,
+            units: self.units + rhs.units
+        };
     }
 }
 
@@ -341,9 +387,7 @@ impl MulAssign for ScalarQuantity
 {
     fn mul_assign(&mut self, rhs: ScalarQuantity)
     {
-        self.units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
-        self.units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
-        self.units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
+        self.units += rhs.units;
         self.value *= rhs.value;
     }
 }
@@ -354,14 +398,10 @@ impl Div for ScalarQuantity
 
     fn div(self, rhs: ScalarQuantity) -> ScalarQuantity
     {
-        let mut res = ScalarQuantity::new();
-
-        res.units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
-        res.units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
-        res.units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
-        res.value = self.value / rhs.value;
-
-        return res;
+        return ScalarQuantity {
+            value: self.value / rhs.value,
+            units: self.units - rhs.units
+        };
     }
 }
 
@@ -369,9 +409,7 @@ impl DivAssign for ScalarQuantity
 {
     fn div_assign(&mut self, rhs: ScalarQuantity)
     {
-        self.units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
-        self.units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
-        self.units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
+        self.units -= rhs.units;
         self.value /= rhs.value;
     }
 }
@@ -535,24 +573,21 @@ impl PartialOrd for ScalarQuantity
 
 //-------------------------------VectorQuantity-------------------------------//
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct VectorQuantity
 {
     value: Vector3,
-    units: HashMap<SI, f64>
+    units: SI
 }
 
 impl VectorQuantity
 {
     pub fn from(v: Vector3) -> VectorQuantity
     {
-        let mut units = HashMap::new();
-
-        units.insert(SI::Meter, 0.);
-        units.insert(SI::Second, 0.);
-        units.insert(SI::Kilogram, 0.);
-
-        return VectorQuantity { value: v, units }
+        return VectorQuantity { 
+            value: v, 
+            units: SI::empty() 
+        };
     }
 
     pub fn mag(self) -> ScalarQuantity
@@ -594,7 +629,6 @@ impl Add for VectorQuantity
         if self.units != rhs.units
         {
             panic!("trying to sum incompatible units");
-            
         }
 
         return VectorQuantity
@@ -627,7 +661,6 @@ impl Sub for VectorQuantity
         if self.units != rhs.units
         {
             panic!("trying to sum incompatible units");
-            
         }
 
         return VectorQuantity
@@ -677,12 +710,10 @@ impl Mul<ScalarQuantity> for VectorQuantity
 
     fn mul(self, rhs: ScalarQuantity) -> VectorQuantity
     {
-        let mut vq = VectorQuantity::from(self.value * rhs.value);
-        vq.units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
-        vq.units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
-        vq.units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
-
-        return vq;
+        return VectorQuantity {
+            value: self.value * rhs.value,
+            units: self.units + rhs.units
+        };
     }
 }
 
@@ -691,9 +722,7 @@ impl MulAssign<ScalarQuantity> for VectorQuantity
     fn mul_assign(&mut self, rhs: ScalarQuantity)
     {
         self.value *= rhs.value;
-        self.units.insert(SI::Meter, self.units[&SI::Meter] + rhs.units[&SI::Meter]);
-        self.units.insert(SI::Second, self.units[&SI::Second] + rhs.units[&SI::Second]);
-        self.units.insert(SI::Kilogram, self.units[&SI::Kilogram] + rhs.units[&SI::Kilogram]);
+        self.units += rhs.units;
     }
 }
 
@@ -703,12 +732,10 @@ impl Div<ScalarQuantity> for VectorQuantity
 
     fn div(self, rhs: ScalarQuantity) -> VectorQuantity
     {
-        let mut vq = VectorQuantity::from(self.value / rhs.value);
-        vq.units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
-        vq.units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
-        vq.units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
-
-        return vq;
+        return VectorQuantity {
+            value: self.value / rhs.value,
+            units: self.units - rhs.units
+        };
     }
 }
 
@@ -717,9 +744,7 @@ impl DivAssign<ScalarQuantity> for VectorQuantity
     fn div_assign(&mut self, rhs: ScalarQuantity)
     {
         self.value /= rhs.value;
-        self.units.insert(SI::Meter, self.units[&SI::Meter] - rhs.units[&SI::Meter]);
-        self.units.insert(SI::Second, self.units[&SI::Second] - rhs.units[&SI::Second]);
-        self.units.insert(SI::Kilogram, self.units[&SI::Kilogram] - rhs.units[&SI::Kilogram]);
+        self.units -= rhs.units;
     }
 }
 
@@ -729,8 +754,7 @@ impl Mul<f64> for VectorQuantity
 
     fn mul(self, rhs: f64) -> VectorQuantity
     {
-        return VectorQuantity
-        {
+        return VectorQuantity {
             value: self.value * rhs,
             units: self.units
         }
@@ -751,8 +775,7 @@ impl Div<f64> for VectorQuantity
 
     fn div(self, rhs: f64) -> VectorQuantity
     {
-        return VectorQuantity
-        {
+        return VectorQuantity {
             value: self.value / rhs,
             units: self.units
         }
