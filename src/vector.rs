@@ -1,6 +1,7 @@
 use std::cmp::PartialEq;
 use std::ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign};
 
+/// Represents 3-dimentional vector
 #[derive(Copy, Clone, Debug)]
 pub struct Vector3
 {
@@ -11,21 +12,25 @@ pub struct Vector3
 
 impl Vector3
 {
+    /// New vector with given coordinates.
     pub fn new(x: f64, y: f64, z: f64) -> Vector3
     {
         return Vector3 { x, y, z };
     }
 
+    /// Dot product of two vectors.
     pub fn dot(&self, v: &Vector3) -> f64
     {
         return self.x * v.x + self.y * v.y + self.z * v.z;
     }
 
+    /// Magnitude of the vector.
     pub fn mag(&self) -> f64
     {
         return self.dot(self).sqrt();
     }
 
+    /// Vector that has the same direction but unit length.
     pub fn unit(&self) -> Vector3
     {
         let m = self.mag();
@@ -37,6 +42,7 @@ impl Vector3
         };
     }
 
+    /// Vector with all coordinates equal to 0.
     pub fn null_vector() -> Vector3
     {
         return Vector3 { x: 0.0, y: 0.0, z: 0.0 };

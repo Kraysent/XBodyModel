@@ -3,7 +3,7 @@
 * add epsilon (smoothing factor) to forces count in SimpleNBody generator
 * add Runge-Kutta method for numerical integration in SimpleNBody (most likely would use `enum` for this)
 * create tests for basic `ScalarQuantity` and `VectorQuantity` functions
-* implement some basic mathematical operations on quantitites (including sqrt)
+* implement custom error class in order to get rid of `&'static str` in each `Result` 
 
 ### In more distant future:
 * add more integrators (Barnes-Hut algorithm at least) and generators (Solar system at least)

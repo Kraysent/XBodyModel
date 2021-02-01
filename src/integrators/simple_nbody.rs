@@ -3,6 +3,7 @@ use crate::vector::Vector3;
 use crate::quantity::{ Units, ScalarQuantity };
 use super::Integrator;
 
+/// Integrator that uses direct summation and Euler method of numerical integration.
 #[allow(non_snake_case)]
 pub struct SimpleNBody
 {
@@ -14,6 +15,7 @@ pub struct SimpleNBody
 
 impl SimpleNBody
 {
+    /// Initialises integrator.
     pub fn new(particle_set: &ParticleSet) -> Result<SimpleNBody, &'static str>
     {  
         let positions = particle_set.particles.iter().map(|p| -> Vector3 { 

@@ -1,12 +1,13 @@
 use super::Generator;
 use crate::particles::*;
 use crate::vector::Vector3;
+use crate::quantity::{ ScalarQuantity, Units };
 use rand::prelude::*;
 use rand::distributions::{ Standard };
 use rand_distr::{ Normal, Distribution };
 use std::f64::consts::PI;
-use crate::quantity::{ ScalarQuantity, Units };
 
+/// Struct that handles creation of sphere with Plummer distribution
 #[allow(non_snake_case)]
 pub struct Plummer
 {
@@ -18,6 +19,10 @@ pub struct Plummer
 
 impl Plummer
 {
+    /// Creates new `Plummer` struct with given parameters:
+    /// `r` - Plummer radius - a scale parameter that sets the size of the cluster core,
+    /// `n` - number of particles,
+    /// `m` - whole mass of the cluster. 
     pub fn new(r: ScalarQuantity, n: usize, m: ScalarQuantity) -> Result<Plummer, &'static str>
     {
         let rad_check = |rad: &ScalarQuantity| -> bool
