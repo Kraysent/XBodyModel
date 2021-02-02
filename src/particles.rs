@@ -1,58 +1,52 @@
-use std::cmp::PartialEq;
 use crate::quantity::*;
 use crate::vector::Vector3;
+use std::cmp::PartialEq;
 
-pub struct Particle
-{
+pub struct Particle {
     position: VectorQuantity,
     velocity: VectorQuantity,
-    mass: ScalarQuantity
+    mass: ScalarQuantity,
 }
 
-impl Particle
-{
-    pub fn new(position: VectorQuantity, velocity: VectorQuantity, mass: ScalarQuantity) 
-        -> Result<Particle, &'static str>
-    {
+impl Particle {
+    pub fn new(
+        position: VectorQuantity,
+        velocity: VectorQuantity,
+        mass: ScalarQuantity,
+    ) -> Result<Particle, &'static str> {
         let mut res = Particle::empty();
-        
+
         res.set_position(position)?;
         res.set_velocity(velocity)?;
         res.set_mass(mass)?;
-        
+
         return Ok(res);
     }
 
-    pub fn empty() -> Particle
-    {
-        return Particle
-        {
+    pub fn empty() -> Particle {
+        return Particle {
             position: Vector3::null_vector() * Units::m,
             velocity: Vector3::null_vector() * Units::ms,
-            mass: 1. * Units::kg
-        }
+            mass: 1. * Units::kg,
+        };
     }
 
-    pub fn set_position(&mut self, position: VectorQuantity) -> Result<(), &'static str>
-    {
-        let check_pos = |pos: &VectorQuantity| -> bool 
-        {
+    pub fn set_position(&mut self, position: VectorQuantity) -> Result<(), &'static str> {
+        let check_pos = |pos: &VectorQuantity| -> bool {
             return pos.is_compatible(Units::m.convert());
         };
 
         if !check_pos(&position) {
             return Err("incorrect position");
         }
-        
+
         self.position = position;
 
         return Ok(());
     }
 
-    pub fn set_velocity(&mut self, velocity: VectorQuantity) -> Result<(), &'static str>
-    {
-        let check_vel = |vel: &VectorQuantity| -> bool
-        {
+    pub fn set_velocity(&mut self, velocity: VectorQuantity) -> Result<(), &'static str> {
+        let check_vel = |vel: &VectorQuantity| -> bool {
             return vel.is_compatible(Units::ms.convert());
         };
 
@@ -65,10 +59,8 @@ impl Particle
         return Ok(());
     }
 
-    pub fn set_mass(&mut self, mass: ScalarQuantity) -> Result<(), &'static str>
-    {
-        let check_mass = |m: &ScalarQuantity| -> bool
-        {
+    pub fn set_mass(&mut self, mass: ScalarQuantity) -> Result<(), &'static str> {
+        let check_mass = |m: &ScalarQuantity| -> bool {
             if m.is_compatible(Units::kg.convert()) {
                 return *m >= 0. * Units::kg;
             }
@@ -85,64 +77,55 @@ impl Particle
         return Ok(());
     }
 
-    pub fn get_position(&self) -> VectorQuantity
-    {
+    pub fn get_position(&self) -> VectorQuantity {
         return self.position;
     }
 
-    pub fn get_velocity(&self) -> VectorQuantity
-    {
+    pub fn get_velocity(&self) -> VectorQuantity {
         return self.velocity;
     }
 
-    pub fn get_mass(&self) -> ScalarQuantity
-    {
+    pub fn get_mass(&self) -> ScalarQuantity {
         return self.mass;
     }
 }
 
-impl PartialEq for Particle
-{
-    fn eq(&self, p: &Particle) -> bool 
-    { 
-        return (self.position == p.position) 
+impl PartialEq for Particle {
+    fn eq(&self, p: &Particle) -> bool {
+        return (self.position == p.position)
             && (self.velocity == p.velocity)
             && (self.mass == p.mass);
     }
 }
 
-/// Represents the set of particles; it is needed in order 
+/// Represents the set of particles; it is needed in order
 /// to be able to calculate things like energies and so on
-pub struct ParticleSet
-{
-    pub particles: Vec<Particle>
+pub struct ParticleSet {
+    pub particles: Vec<Particle>,
 }
 
-impl ParticleSet
-{
+impl ParticleSet {
     /// Creates new instance of a `ParticleSet`
-    /// 
+    ///
     /// `return`: `ParticleSet` or the error with description
-    pub fn new() -> Result<ParticleSet, &'static str>
-    {
-        return Ok(ParticleSet{ particles: Vec::new() });
+    pub fn new() -> Result<ParticleSet, &'static str> {
+        return Ok(ParticleSet {
+            particles: Vec::new(),
+        });
     }
 
     /// Adds one particle to the set
-    /// 
+    ///
     /// `p`: given particle
-    pub fn add_particle(&mut self, p: Particle)
-    {
+    pub fn add_particle(&mut self, p: Particle) {
         self.particles.push(p);
     }
 
     /// Adds one set of particles into another
-    /// 
+    ///
     /// `ps`: given set of particles
-    pub fn add_particles(&mut self, ps: ParticleSet)
-    {
-        for p in ps.particles
-        {
+    pub fn add_particles(&mut self, ps: ParticleSet) {
+        for p in ps.particles {
             self.add_particle(p);
         }
     }
@@ -150,12 +133,10 @@ impl ParticleSet
     /// Returns kinetic energy of the particle set;
     /// Complexity: O(N)
     /// `return`: ScalarQuantity equivalent to Units::J
-    pub fn get_kinetic_energy(&self) -> ScalarQuantity
-    {
+    pub fn get_kinetic_energy(&self) -> ScalarQuantity {
         let mut result = 0. * Units::J;
 
-        for p in self.particles.iter()
-        {
+        for p in self.particles.iter() {
             result += p.get_mass() * p.get_velocity().mag().pow(2.) / 2.;
         }
 
@@ -165,15 +146,12 @@ impl ParticleSet
     /// Returns potential energy of the particle set;
     /// Complexity: O(N^2)
     /// `return`: ScalarQuantity equivalent to Units::J
-    pub fn get_potential_energy(&self) -> ScalarQuantity
-    {
+    pub fn get_potential_energy(&self) -> ScalarQuantity {
         let mut result = 0. * Units::J;
         let set = &self.particles;
 
-        for i in 0..set.len()
-        {
-            for j in 0..set.len()
-            {
+        for i in 0..set.len() {
+            for j in 0..set.len() {
                 if i == j {
                     continue;
                 }

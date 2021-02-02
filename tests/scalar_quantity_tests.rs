@@ -2,8 +2,7 @@ use xbody_model::quantity::Units;
 use xbody_model::vector::Vector3;
 
 #[test]
-fn squantity_add_squantity()
-{
+fn squantity_add_squantity() {
     let q1 = 2. * Units::m;
     let q2 = 3. * Units::m;
 
@@ -14,8 +13,7 @@ fn squantity_add_squantity()
 }
 
 #[test]
-fn squantity_addassign_squantity()
-{
+fn squantity_addassign_squantity() {
     let mut actual = 2. * Units::m;
     let q2 = 3. * Units::m;
 
@@ -26,8 +24,7 @@ fn squantity_addassign_squantity()
 }
 
 #[test]
-fn squantity_sub_squantity()
-{
+fn squantity_sub_squantity() {
     let q1 = 2. * Units::m;
     let q2 = 3. * Units::m;
 
@@ -38,8 +35,7 @@ fn squantity_sub_squantity()
 }
 
 #[test]
-fn squantity_subassign_squantity()
-{
+fn squantity_subassign_squantity() {
     let mut actual = 2. * Units::m;
     let q2 = 3. * Units::m;
 
@@ -51,8 +47,7 @@ fn squantity_subassign_squantity()
 
 #[test]
 #[should_panic]
-fn squantity_add_incompatible_squantity()
-{
+fn squantity_add_incompatible_squantity() {
     let q1 = 2. * Units::m;
     let q2 = 3. * Units::s;
 
@@ -61,8 +56,7 @@ fn squantity_add_incompatible_squantity()
 
 #[test]
 #[should_panic]
-fn squantity_addassign_incompatible_squantity()
-{
+fn squantity_addassign_incompatible_squantity() {
     let mut actual = 2. * Units::m;
     let q2 = 3. * Units::s;
 
@@ -71,8 +65,7 @@ fn squantity_addassign_incompatible_squantity()
 
 #[test]
 #[should_panic]
-fn squantity_sub_incompatible_squantity()
-{
+fn squantity_sub_incompatible_squantity() {
     let q1 = 2. * Units::m;
     let q2 = 3. * Units::s;
 
@@ -81,8 +74,7 @@ fn squantity_sub_incompatible_squantity()
 
 #[test]
 #[should_panic]
-fn squantity_subassign_incompatible_squantity()
-{
+fn squantity_subassign_incompatible_squantity() {
     let mut actual = 2. * Units::m;
     let q2 = 3. * Units::s;
 
@@ -90,8 +82,7 @@ fn squantity_subassign_incompatible_squantity()
 }
 
 #[test]
-fn squantity_mul_f64()
-{
+fn squantity_mul_f64() {
     let x = 3. * Units::s;
     let y = 2.;
 
@@ -102,8 +93,7 @@ fn squantity_mul_f64()
 }
 
 #[test]
-fn squantity_mulassign_f64()
-{
+fn squantity_mulassign_f64() {
     let mut actual = 3. * Units::s;
     let y = 2.;
 
@@ -114,8 +104,7 @@ fn squantity_mulassign_f64()
 }
 
 #[test]
-fn squantity_mul_units()
-{
+fn squantity_mul_units() {
     let x = 3. * Units::s;
     let y = Units::m;
 
@@ -126,8 +115,7 @@ fn squantity_mul_units()
 }
 
 #[test]
-fn squantity_mulassign_units()
-{
+fn squantity_mulassign_units() {
     let mut actual = 3. * Units::s;
     let y = Units::m;
 
@@ -138,8 +126,7 @@ fn squantity_mulassign_units()
 }
 
 #[test]
-fn squantity_mul_squantity()
-{
+fn squantity_mul_squantity() {
     let x = 3. * Units::s;
     let y = 2. * Units::m;
 
@@ -150,8 +137,7 @@ fn squantity_mul_squantity()
 }
 
 #[test]
-fn squantity_mulassign_squantity()
-{
+fn squantity_mulassign_squantity() {
     let mut actual = 3. * Units::s;
     let y = 2. * Units::m;
 
@@ -162,8 +148,7 @@ fn squantity_mulassign_squantity()
 }
 
 #[test]
-fn squantity_div_f64()
-{
+fn squantity_div_f64() {
     let x = 3. * Units::s;
     let y = 2.;
 
@@ -174,8 +159,7 @@ fn squantity_div_f64()
 }
 
 #[test]
-fn squantity_divassign_f64()
-{
+fn squantity_divassign_f64() {
     let mut actual = 3. * Units::s;
     let y = 2.;
 
@@ -186,8 +170,7 @@ fn squantity_divassign_f64()
 }
 
 #[test]
-fn squantity_div_units()
-{
+fn squantity_div_units() {
     let x = 3. * Units::s;
     let y = Units::m;
 
@@ -198,8 +181,7 @@ fn squantity_div_units()
 }
 
 #[test]
-fn squantity_divassign_units()
-{
+fn squantity_divassign_units() {
     let mut actual = 3. * Units::s;
     let y = Units::m;
 
@@ -210,8 +192,7 @@ fn squantity_divassign_units()
 }
 
 #[test]
-fn squantity_div_squantity()
-{
+fn squantity_div_squantity() {
     let x = 3. * Units::s;
     let y = 2. * Units::m;
 
@@ -222,8 +203,7 @@ fn squantity_div_squantity()
 }
 
 #[test]
-fn squantity_divassign_squantity()
-{
+fn squantity_divassign_squantity() {
     let mut actual = 3. * Units::s;
     let y = 2. * Units::m;
 
@@ -234,8 +214,7 @@ fn squantity_divassign_squantity()
 }
 
 #[test]
-fn squantity_mul_vquantity()
-{
+fn squantity_mul_vquantity() {
     let vq = Vector3::new(1., 2., 3.) * Units::m;
     let q = 3. * Units::s;
 
@@ -246,8 +225,7 @@ fn squantity_mul_vquantity()
 }
 
 #[test]
-fn squantity_mul_vector3()
-{
+fn squantity_mul_vector3() {
     let v = Vector3::new(1., 2., 1.);
     let q = 3. * Units::m;
 
@@ -258,8 +236,7 @@ fn squantity_mul_vector3()
 }
 
 #[test]
-fn vector3_mul_squantity()
-{
+fn vector3_mul_squantity() {
     let v = Vector3::new(1., 2., 1.);
     let q = 3. * Units::m;
 
@@ -270,8 +247,7 @@ fn vector3_mul_squantity()
 }
 
 #[test]
-fn vector3_div_squantity()
-{
+fn vector3_div_squantity() {
     let v = Vector3::new(3., 6., 3.);
     let q = 3. * Units::m;
 
@@ -282,8 +258,7 @@ fn vector3_div_squantity()
 }
 
 #[test]
-fn f64_mul_squantity()
-{
+fn f64_mul_squantity() {
     let x = 6.;
     let q = 2. * Units::m;
 
@@ -294,8 +269,7 @@ fn f64_mul_squantity()
 }
 
 #[test]
-fn f64_div_squantity()
-{
+fn f64_div_squantity() {
     let x = 6.;
     let q = 2. * Units::m;
 
@@ -306,8 +280,7 @@ fn f64_div_squantity()
 }
 
 #[test]
-fn squantity_cmp_squantity()
-{
+fn squantity_cmp_squantity() {
     let q1 = 2.0 * Units::m;
     let q2 = 3.0 * Units::m;
     let q3 = 2.0 * Units::m;
@@ -318,14 +291,13 @@ fn squantity_cmp_squantity()
     assert_eq!(q1 < q2, true);
     assert_eq!(q3 >= q2, false);
     assert_eq!(q1 >= q3, true);
-    assert_eq!(q2 <= q1, false);    
-    assert_eq!(q1 <= q2, true);    
+    assert_eq!(q2 <= q1, false);
+    assert_eq!(q1 <= q2, true);
 }
 
 #[test]
 #[should_panic]
-fn squantity_cmp_incompatible_squantity()
-{
+fn squantity_cmp_incompatible_squantity() {
     let q1 = 2.0 * Units::m;
     let q2 = 3.0 * Units::s;
 
