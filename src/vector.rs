@@ -1,4 +1,5 @@
 use std::cmp::PartialEq;
+use std::fmt::{Display, Formatter, Result, LowerExp};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// Represents 3-dimentional vector
@@ -7,6 +8,26 @@ pub struct Vector3 {
     pub x: f64,
     pub y: f64,
     pub z: f64,
+}
+
+impl Display for Vector3 {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "[{}, {}, {}]",
+            self.x, self.y, self.z
+        );
+    }
+}
+
+impl LowerExp for Vector3 {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "[{:.5e} {:.5e} {:.5e}]",
+            self.x, self.y, self.z
+        );
+    }
 }
 
 impl Vector3 {

@@ -1,6 +1,6 @@
 use crate::vector::Vector3;
 use std::cmp::{Ordering, PartialEq, PartialOrd};
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{Display, Formatter, Result, LowerExp};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 //-------------------------------SI-------------------------------//
@@ -35,6 +35,16 @@ impl SI {
             seconds: self.seconds * x,
             kilograms: self.kilograms * x,
         };
+    }
+}
+
+impl Display for SI {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "m^{} s^{} kg^{}",
+            self.meters, self.seconds, self.kilograms
+        );
     }
 }
 
@@ -243,11 +253,21 @@ impl ScalarQuantity {
 }
 
 impl Display for ScalarQuantity {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         return write!(
             f,
-            "{:e} m^{} s^{} kg^{}",
-            self.value, self.units.meters, self.units.seconds, self.units.kilograms
+            "{} {}",
+            self.value, self.units
+        );
+    }
+}
+
+impl LowerExp for ScalarQuantity {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "{:.5e} {}",
+            self.value, self.units
         );
     }
 }
@@ -498,6 +518,26 @@ impl VectorQuantity {
 
     pub fn is_compatible(&self, quantity: ScalarQuantity) -> bool {
         return self.units == quantity.units;
+    }
+}
+
+impl Display for VectorQuantity {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "{} {}",
+            self.value, self.units
+        );
+    }
+}
+
+impl LowerExp for VectorQuantity {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "{:e} {}",
+            self.value, self.units
+        );
     }
 }
 
