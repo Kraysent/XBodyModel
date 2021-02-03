@@ -140,30 +140,6 @@ impl Units {
     }
 }
 
-impl Mul<ScalarQuantity> for Units {
-    type Output = ScalarQuantity;
-
-    fn mul(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        return ScalarQuantity::new() * self * rhs;
-    }
-}
-
-impl Div<ScalarQuantity> for Units {
-    type Output = ScalarQuantity;
-
-    fn div(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        return ScalarQuantity::new() * self / rhs;
-    }
-}
-
-impl Mul<VectorQuantity> for Units {
-    type Output = VectorQuantity;
-
-    fn mul(self, rhs: VectorQuantity) -> VectorQuantity {
-        return rhs * self;
-    }
-}
-
 impl Mul<f64> for Units {
     type Output = ScalarQuantity;
 
@@ -212,13 +188,245 @@ impl Div<Units> for Vector3 {
     }
 }
 
-//-------------------------------ScalarQuantity-------------------------------//
+//-------------------------------Quantity-------------------------------//
+
+pub trait QuantityBound: 
+    Add<Output = Self> + AddAssign + Sub<Output = Self> + SubAssign 
+    + Mul<f64, Output = Self> + MulAssign<f64> + Div<f64, Output = Self> + DivAssign<f64> 
+    + PartialEq + Clone + Copy + Display + LowerExp
+    where Self: Sized { }
+
+impl<T> QuantityBound for T 
+    where T: Add<Output = Self> + AddAssign + Sub<Output = Self> + SubAssign 
+    + Mul<f64, Output = Self> + MulAssign<f64> + Div<f64, Output = Self> + DivAssign<f64> 
+    + PartialEq + Clone + Copy + Display + LowerExp { }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
-pub struct ScalarQuantity {
-    value: f64,
-    units: SI,
+pub struct Quantity<T> 
+where T: QuantityBound {
+    value: T,
+    units: SI
 }
+
+pub type ScalarQuantity = Quantity<f64>;
+pub type VectorQuantity = Quantity<Vector3>;
+
+impl<T: QuantityBound> Quantity<T>{
+    pub fn value_in_q(&self, q: Quantity<f64>) -> T {
+        if self.units != q.units {
+            panic!("trying to take value in incompatible units");
+        }
+
+        return self.value / q.value;
+    }
+
+    pub fn is_compatible<V: QuantityBound>(&self, q: Quantity<V>) -> bool {
+        return self.units == q.units;
+    }
+
+    pub fn value_in(&self, unit: Units) -> T {
+        return self.value_in_q(unit.convert());
+    }
+}
+
+impl<T: QuantityBound> Display for Quantity<T> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "{} {}",
+            self.value, self.units
+        );
+    }
+}
+
+impl<T: QuantityBound> LowerExp for Quantity<T> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        return write!(
+            f,
+            "{:e} {}",
+            self.value, self.units
+        );
+    }
+}
+
+impl<T: QuantityBound> Add for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn add(self, rhs: Quantity<T>) -> Quantity<T> {
+        if self.units != rhs.units {
+            panic!("trying to sum incompatible units");
+        }
+
+        return Quantity {
+            value: self.value + rhs.value,
+            units: rhs.units
+        }
+    }
+}
+
+impl<T: QuantityBound> AddAssign for Quantity<T> {
+    fn add_assign(&mut self, rhs: Quantity<T>) {
+        if self.units != rhs.units {
+            panic!("trying to sum incompatible units");
+        }
+
+        self.value += rhs.value;
+    }
+}
+
+impl<T: QuantityBound> Sub for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn sub(self, rhs: Quantity<T>) -> Quantity<T> {
+        if self.units != rhs.units {
+            panic!("trying to sum incompatible units");
+        }
+
+        return Quantity {
+            value: self.value - rhs.value,
+            units: rhs.units
+        }
+    }
+}
+
+impl<T: QuantityBound> SubAssign for Quantity<T> {
+    fn sub_assign(&mut self, rhs: Quantity<T>) {
+        if self.units != rhs.units {
+            panic!("trying to sum incompatible units");
+        }
+        
+        self.value -= rhs.value;
+    }
+}
+
+impl<T: QuantityBound> Mul<f64> for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn mul(self, rhs: f64) -> Quantity<T> {
+        return Quantity {
+            value: self.value * rhs,
+            units: self.units
+        }
+    }
+}
+
+impl<T: QuantityBound> MulAssign<f64> for Quantity<T> {
+    fn mul_assign(&mut self, rhs: f64) {
+        self.value *= rhs;
+    }
+}
+
+impl<T: QuantityBound> Div<f64> for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn div(self, rhs: f64) -> Quantity<T> {
+        return Quantity {
+            value: self.value / rhs,
+            units: self.units
+        }
+    }
+}
+
+impl<T: QuantityBound> DivAssign<f64> for Quantity<T> {
+    fn div_assign(&mut self, rhs: f64) {
+        self.value /= rhs;
+    }
+}
+
+impl<T: QuantityBound> Mul<ScalarQuantity> for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn mul(self, rhs: Quantity<f64>) -> Quantity<T> {
+        return Quantity {
+            value: self.value * rhs.value,
+            units: self.units + rhs.units
+        }
+    }
+}
+
+impl<T: QuantityBound> MulAssign<ScalarQuantity> for Quantity<T> {
+    fn mul_assign(&mut self, rhs: Quantity<f64>) {
+        self.value *= rhs.value;
+        self.units += rhs.units;
+    }
+}
+
+impl<T: QuantityBound> Div<ScalarQuantity> for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn div(self, rhs: Quantity<f64>) -> Quantity<T> {
+        return Quantity {
+            value: self.value / rhs.value,
+            units: self.units - rhs.units
+        }
+    }
+}
+
+impl<T: QuantityBound> DivAssign<ScalarQuantity> for Quantity<T> {
+    fn div_assign(&mut self, rhs: Quantity<f64>) {
+        self.value /= rhs.value;
+        self.units -= rhs.units;
+    }
+}
+
+impl<T: QuantityBound> Mul<Units> for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn mul(self, rhs: Units) -> Quantity<T> {
+        return self * rhs.convert();
+    }
+}
+
+impl<T: QuantityBound> MulAssign<Units> for Quantity<T> {
+    fn mul_assign(&mut self, rhs: Units) {
+        *self *= rhs.convert();
+    }
+}
+
+impl<T: QuantityBound> Div<Units> for Quantity<T> {
+    type Output = Quantity<T>;
+
+    fn div(self, rhs: Units) -> Quantity<T> {
+        return self / rhs.convert();
+    }
+}
+
+impl<T: QuantityBound> DivAssign<Units> for Quantity<T> {
+    fn div_assign(&mut self, rhs: Units) {
+        *self /= rhs.convert();
+    }
+}
+
+impl<T: QuantityBound> Mul<Quantity<T>> for f64 {
+    type Output = Quantity<T>;
+
+    fn mul(self, rhs: Quantity<T>) -> Quantity<T> {
+        return Quantity {
+            value: rhs.value * self,
+            units: rhs.units
+        }
+    }
+}
+
+impl<T: QuantityBound> Mul<Quantity<T>> for Units {
+    type Output = Quantity<T>;
+
+    fn mul(self, rhs: Quantity<T>) -> Quantity<T> {
+        return rhs * self;
+    }
+}
+
+impl<T: QuantityBound + PartialOrd> PartialOrd for Quantity<T> {
+    fn partial_cmp(&self, rhs: &Quantity<T>) -> Option<Ordering> {
+        if self.units != rhs.units {
+            panic!("trying to compare incompatible units");
+        }
+
+        return self.value.partial_cmp(&rhs.value);
+    }
+}
+
+//-------------------------------ScalarQuantity-------------------------------//
 
 impl ScalarQuantity {
     pub fn new() -> ScalarQuantity {
@@ -233,190 +441,6 @@ impl ScalarQuantity {
             value: self.value.powf(x),
             units: self.units.pow(x),
         };
-    }
-
-    pub fn value_in_q(&self, quantity: ScalarQuantity) -> f64 {
-        if quantity.units != self.units {
-            panic!("trying to take value in incompatible units");
-        }
-
-        return self.value / quantity.value;
-    }
-
-    pub fn value_in(&self, unit: Units) -> f64 {
-        return self.value_in_q(unit.convert());
-    }
-
-    pub fn is_compatible(&self, quantity: ScalarQuantity) -> bool {
-        return self.units == quantity.units;
-    }
-}
-
-impl Display for ScalarQuantity {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        return write!(
-            f,
-            "{} {}",
-            self.value, self.units
-        );
-    }
-}
-
-impl LowerExp for ScalarQuantity {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        return write!(
-            f,
-            "{:.5e} {}",
-            self.value, self.units
-        );
-    }
-}
-
-impl Add for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn add(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        return ScalarQuantity {
-            value: self.value + rhs.value,
-            units: self.units,
-        };
-    }
-}
-
-impl AddAssign for ScalarQuantity {
-    fn add_assign(&mut self, rhs: ScalarQuantity) {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        self.value += rhs.value;
-    }
-}
-
-impl Sub for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn sub(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        return ScalarQuantity {
-            value: self.value - rhs.value,
-            units: self.units,
-        };
-    }
-}
-
-impl SubAssign for ScalarQuantity {
-    fn sub_assign(&mut self, rhs: ScalarQuantity) {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        self.value -= rhs.value;
-    }
-}
-
-impl Mul for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn mul(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        return ScalarQuantity {
-            value: self.value * rhs.value,
-            units: self.units + rhs.units,
-        };
-    }
-}
-
-impl MulAssign for ScalarQuantity {
-    fn mul_assign(&mut self, rhs: ScalarQuantity) {
-        self.units += rhs.units;
-        self.value *= rhs.value;
-    }
-}
-
-impl Div for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn div(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        return ScalarQuantity {
-            value: self.value / rhs.value,
-            units: self.units - rhs.units,
-        };
-    }
-}
-
-impl DivAssign for ScalarQuantity {
-    fn div_assign(&mut self, rhs: ScalarQuantity) {
-        self.units -= rhs.units;
-        self.value /= rhs.value;
-    }
-}
-
-impl Mul<Units> for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn mul(self, rhs: Units) -> ScalarQuantity {
-        return self * rhs.convert();
-    }
-}
-
-impl MulAssign<Units> for ScalarQuantity {
-    fn mul_assign(&mut self, rhs: Units) {
-        *self *= rhs.convert();
-    }
-}
-
-impl Div<Units> for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn div(self, rhs: Units) -> ScalarQuantity {
-        return self / (ScalarQuantity::new() * rhs);
-    }
-}
-
-impl DivAssign<Units> for ScalarQuantity {
-    fn div_assign(&mut self, rhs: Units) {
-        *self /= rhs.convert();
-    }
-}
-
-impl Mul<f64> for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn mul(self, rhs: f64) -> ScalarQuantity {
-        return ScalarQuantity {
-            value: self.value * rhs,
-            units: self.units,
-        };
-    }
-}
-
-impl MulAssign<f64> for ScalarQuantity {
-    fn mul_assign(&mut self, rhs: f64) {
-        self.value *= rhs;
-    }
-}
-
-impl Div<f64> for ScalarQuantity {
-    type Output = ScalarQuantity;
-
-    fn div(self, rhs: f64) -> ScalarQuantity {
-        return ScalarQuantity {
-            value: self.value / rhs,
-            units: self.units,
-        };
-    }
-}
-
-impl DivAssign<f64> for ScalarQuantity {
-    fn div_assign(&mut self, rhs: f64) {
-        self.value /= rhs;
     }
 }
 
@@ -433,17 +457,6 @@ impl Mul<VectorQuantity> for ScalarQuantity {
 
     fn mul(self, rhs: VectorQuantity) -> VectorQuantity {
         return rhs * self;
-    }
-}
-
-impl Mul<ScalarQuantity> for f64 {
-    type Output = ScalarQuantity;
-
-    fn mul(self, rhs: ScalarQuantity) -> ScalarQuantity {
-        return ScalarQuantity {
-            value: self * rhs.value,
-            units: rhs.units,
-        };
     }
 }
 
@@ -471,23 +484,7 @@ impl Div<ScalarQuantity> for Vector3 {
     }
 }
 
-impl PartialOrd for ScalarQuantity {
-    fn partial_cmp(&self, rhs: &ScalarQuantity) -> Option<Ordering> {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        return self.value.partial_cmp(&rhs.value);
-    }
-}
-
 //-------------------------------VectorQuantity-------------------------------//
-
-#[derive(PartialEq, Debug, Clone, Copy)]
-pub struct VectorQuantity {
-    value: Vector3,
-    units: SI,
-}
 
 impl VectorQuantity {
     pub fn from(v: Vector3) -> VectorQuantity {
@@ -502,185 +499,5 @@ impl VectorQuantity {
             value: self.value.mag(),
             units: self.units,
         };
-    }
-
-    pub fn value_in_q(&self, quantity: ScalarQuantity) -> Vector3 {
-        if quantity.units != self.units {
-            panic!("trying to take value in incompatible units");
-        }
-
-        return self.value / quantity.value;
-    }
-
-    pub fn value_in(&self, unit: Units) -> Vector3 {
-        return self.value_in_q(unit.convert());
-    }
-
-    pub fn is_compatible(&self, quantity: ScalarQuantity) -> bool {
-        return self.units == quantity.units;
-    }
-}
-
-impl Display for VectorQuantity {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        return write!(
-            f,
-            "{} {}",
-            self.value, self.units
-        );
-    }
-}
-
-impl LowerExp for VectorQuantity {
-    fn fmt(&self, f: &mut Formatter) -> Result {
-        return write!(
-            f,
-            "{:e} {}",
-            self.value, self.units
-        );
-    }
-}
-
-impl Add for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn add(self, rhs: VectorQuantity) -> VectorQuantity {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        return VectorQuantity {
-            value: self.value + rhs.value,
-            units: self.units,
-        };
-    }
-}
-
-impl AddAssign for VectorQuantity {
-    fn add_assign(&mut self, rhs: VectorQuantity) {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        self.value += rhs.value;
-    }
-}
-
-impl Sub for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn sub(self, rhs: VectorQuantity) -> VectorQuantity {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        return VectorQuantity {
-            value: self.value - rhs.value,
-            units: self.units,
-        };
-    }
-}
-
-impl SubAssign for VectorQuantity {
-    fn sub_assign(&mut self, rhs: VectorQuantity) {
-        if self.units != rhs.units {
-            panic!("trying to sum incompatible units");
-        }
-
-        self.value -= rhs.value;
-    }
-}
-
-impl Mul<Units> for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn mul(self, rhs: Units) -> VectorQuantity {
-        return self * (ScalarQuantity::new() * rhs);
-    }
-}
-
-impl Div<Units> for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn div(self, rhs: Units) -> VectorQuantity {
-        return self / (ScalarQuantity::new() * rhs);
-    }
-}
-
-impl Mul<ScalarQuantity> for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn mul(self, rhs: ScalarQuantity) -> VectorQuantity {
-        return VectorQuantity {
-            value: self.value * rhs.value,
-            units: self.units + rhs.units,
-        };
-    }
-}
-
-impl MulAssign<ScalarQuantity> for VectorQuantity {
-    fn mul_assign(&mut self, rhs: ScalarQuantity) {
-        self.value *= rhs.value;
-        self.units += rhs.units;
-    }
-}
-
-impl Div<ScalarQuantity> for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn div(self, rhs: ScalarQuantity) -> VectorQuantity {
-        return VectorQuantity {
-            value: self.value / rhs.value,
-            units: self.units - rhs.units,
-        };
-    }
-}
-
-impl DivAssign<ScalarQuantity> for VectorQuantity {
-    fn div_assign(&mut self, rhs: ScalarQuantity) {
-        self.value /= rhs.value;
-        self.units -= rhs.units;
-    }
-}
-
-impl Mul<f64> for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn mul(self, rhs: f64) -> VectorQuantity {
-        return VectorQuantity {
-            value: self.value * rhs,
-            units: self.units,
-        };
-    }
-}
-
-impl MulAssign<f64> for VectorQuantity {
-    fn mul_assign(&mut self, rhs: f64) {
-        self.value *= rhs;
-    }
-}
-
-impl Div<f64> for VectorQuantity {
-    type Output = VectorQuantity;
-
-    fn div(self, rhs: f64) -> VectorQuantity {
-        return VectorQuantity {
-            value: self.value / rhs,
-            units: self.units,
-        };
-    }
-}
-
-impl DivAssign<f64> for VectorQuantity {
-    fn div_assign(&mut self, rhs: f64) {
-        self.value /= rhs;
-    }
-}
-
-impl Mul<VectorQuantity> for f64 {
-    type Output = VectorQuantity;
-
-    fn mul(self, rhs: VectorQuantity) -> VectorQuantity {
-        return rhs * self;
     }
 }
