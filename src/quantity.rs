@@ -104,12 +104,19 @@ impl Mul<SI> for f64 {
 #[allow(non_camel_case_types)]
 pub enum Units {
     m,      // meter
+    AU,     // astronomical unit
     pc,     // parsec
     kpc,    // kiloparsec
     s,      // second
+    min,    // minute
+    h,      // hour
+    day,    // day
+    week,   // week
+    month,  // month
     yr,     // year
     Myr,    // megayear
     kg,     // kilogram
+    MEarth, // mass of the earth
     MSun,   // mass of the sun
     ms,     // meters per second
     kms,    // kilometers per second
@@ -121,15 +128,22 @@ impl Units {
     pub fn convert(&self) -> ScalarQuantity {
         match self {
             Self::m => 1.0 * SI::new(1., 0., 0.),
+            Self::AU => 1.496e+11 * SI::new(1., 0., 0.),
             Self::pc => 3.086e+16 * SI::new(1., 0., 0.),
             Self::kpc => 3.086e+19 * SI::new(1., 0., 0.),
-            Self::s => 1.0 * SI::new(0., 1., 0.),
+            Self::s => 1. * SI::new(0., 1., 0.),
+            Self::min => 60. * SI::new(0., 1., 0.),
+            Self::h => 3600. * SI::new(0., 1., 0.),
+            Self::day => 86400. * SI::new(0., 1., 0.),
+            Self::week => 7. * 86400. * SI::new(0., 1., 0.),
+            Self::month => 30. * 86400. * SI::new(0., 1., 0.),
             Self::yr => 365.0 * 86400.0 * SI::new(0., 1., 0.),
             Self::Myr => 1e+6 * 365.0 * 86400.0 * SI::new(0., 1., 0.),
             Self::kg => 1.0 * SI::new(0., 0., 1.),
+            Self::MEarth => 5.972e+24 * SI::new(0., 0., 1.),
             Self::MSun => 1.989e+30 * SI::new(0., 0., 1.),
             Self::ms => 1. * SI::new(1., -1., 0.),
-            Self::kms => 1e+3 * SI::new(1., 0., -1.),
+            Self::kms => 1e+3 * SI::new(1., -1., 0.),
             Self::J => 1.0 * SI::new(2., -2., 1.),
             Self::G => 6.67e-11 * SI::new(3., -2., -1.),
         }

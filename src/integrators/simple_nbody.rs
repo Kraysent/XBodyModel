@@ -45,7 +45,7 @@ impl SimpleNBody {
         });
     }
 
-    pub fn set_timestep(&mut self, dt: &ScalarQuantity) -> Result<(), String> {
+    pub fn set_timestep(&mut self, dt: ScalarQuantity) -> Result<(), String> {
         if !dt.is_compatible(1.0 * Units::s) {
             return Err("dt has incompatible units".to_string());
         }
@@ -53,6 +53,10 @@ impl SimpleNBody {
         self.timestep = dt.value_in(Units::s);
 
         return Ok(());
+    }
+
+    pub fn get_timestep(&self) -> ScalarQuantity {
+        return self.timestep * Units::s;
     }
 
     fn integrate(&mut self, dt: f64) {
@@ -77,7 +81,7 @@ impl SimpleNBody {
     }
 
     fn get_force(&self, pos1: Vector3, pos2: Vector3, m1: f64, m2: f64) -> Vector3 {
-        let dist = pos2 - pos1;
+        let dist = pos1 - pos2;
 
         return self.G * m1 * m2 / (dist.dot(&dist)) * dist.unit();
     }
