@@ -26,3 +26,39 @@ Generator is the structure that has a goal of creating the set of particles that
 Integrator is the structure that has a goal af integrating given set of particles using some algorithm.
 ### Implemented integrators: 
 * [SimpleNBody](/src/integrators/simple_nbody.rs) - integrator that uses simple direct-summation algorithm and [Euler method](https://en.wikipedia.org/wiki/Euler_method) for integration.
+
+## Examples
+### Minimal working example
+Create plummer sphere and then integrate it for 1'000 years with the step of 1 year:
+```
+use xbody_model::quantity::Units;
+use xbody_model::generators::{Generator, simple_nbody::SimpleNBody};
+use xbody_model::integrators::{Integrator, plummer::Plummer};
+
+fn main() -> Result<(), String> {
+    let r = 0.01 * Units::kpc;
+    let m = 1e+9 * Units::MSun;
+    let n = 100;
+    
+    // Create new instance of Plummer sphere
+    let plummer = Plummer::new(r, n, m)?;
+    // Generate actual particle set
+    let mut ps = plummer.generate()?;
+    // Create new instance of SimpleNBody integrator
+    let mut integrator = SimpleNBody::new(&mut ps)?;
+
+    let dt = 1.0 * Units::yr;
+    
+    for i in 0..1000 {
+        integrator.evolve(&(dt * (i as f64)))?;
+    }
+
+    return Ok(());
+}
+```
+
+You can also use functions like `Particle::get_position`, `Particle::get_velocity`, `Particle::get_mass` to get parameters of each particle at every instant. 
+To iterate over particles in integrator use
+```
+for p in integrator.get_state().particles.iter() { ... }
+``` 
