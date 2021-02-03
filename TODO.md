@@ -5,7 +5,6 @@
 * create tests for basic `ScalarQuantity` and `VectorQuantity` functions
 * implement custom error class in order to get rid of `&'static str` or `String` in each `Result` 
 * add `check_compatability` method to quantities
-* remove `main.rs` file from library (and use it as a pure library)
 
 ### In more distant future:
 * add more integrators (Barnes-Hut algorithm at least) and generators (Solar system at least)
