@@ -10,6 +10,8 @@ pub struct SimpleNBody {
     velocities: Vec<Vector3>,
     masses: Vec<f64>,
     G: f64,
+    timestep: f64,
+    model_time: f64
 }
 
 impl SimpleNBody {
@@ -38,7 +40,40 @@ impl SimpleNBody {
             G: Units::G
                 .convert()
                 .value_in_q(Units::m.pow(3.) * Units::kg.pow(-1.) * Units::s.pow(-2.)),
+            timestep: 1.0,
+            model_time: 0.0
         });
+    }
+
+    pub fn set_timestep(&mut self, dt: &ScalarQuantity) -> Result<(), String> {
+        if !dt.is_compatible(1.0 * Units::s) {
+            return Err("dt has incompatible units".to_string());
+        }
+
+        self.timestep = dt.value_in(Units::s);
+
+        return Ok(());
+    }
+
+    fn integrate(&mut self, dt: f64) {
+        let mut force: Vector3;
+        let mut dvs = vec![Vector3::null_vector(); self.positions.len()];
+        let mut drs = vec![Vector3::null_vector(); self.positions.len()];
+
+        for i in 0..self.positions.len() {
+            force = self.get_force_to_particle(self.positions[i], self.masses[i]);
+            dvs[i] = force / self.masses[i] * dt;
+        }
+
+        self.update_velocities(dvs);
+
+        for i in 0..self.positions.len() {
+            drs[i] = self.velocities[i] * dt;
+        }
+
+        self.update_positions(drs);
+
+        self.model_time += dt;
     }
 
     fn get_force(&self, pos1: Vector3, pos2: Vector3, m1: f64, m2: f64) -> Vector3 {
@@ -75,27 +110,6 @@ impl SimpleNBody {
 }
 
 impl Integrator for SimpleNBody {
-    fn integrate(&mut self, dt: &ScalarQuantity) {
-        let dt = dt.value_in(Units::s);
-        let mut force: Vector3;
-        let mut dvs = vec![Vector3::null_vector(); self.positions.len()];
-        let mut drs = vec![Vector3::null_vector(); self.positions.len()];
-
-        for i in 0..self.positions.len() {
-            force = self.get_force_to_particle(self.positions[i], self.masses[i]);
-
-            dvs[i] = force / self.masses[i] * dt;
-        }
-
-        self.update_velocities(dvs);
-
-        for i in 0..self.positions.len() {
-            drs[i] = self.velocities[i] * dt;
-        }
-
-        self.update_positions(drs);
-    }
-
     fn get_state(&self) -> Result<ParticleSet, &'static str> {
         let mut result = ParticleSet::new()?;
 
@@ -110,5 +124,21 @@ impl Integrator for SimpleNBody {
         }
 
         return Ok(result);
+    }
+
+    fn evolve(&mut self, time: &ScalarQuantity) -> Result<(), String> {
+        if !time.is_compatible(1. * Units::s) {
+            return Err("time has wrong units".to_string());
+        }
+
+        let time = time.value_in(Units::s);
+
+        while self.model_time <= (time - self.timestep) {
+            self.integrate(self.timestep);
+        }
+
+        self.integrate(time - self.model_time);
+
+        return Ok(());
     }
 }

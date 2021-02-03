@@ -5,7 +5,7 @@ use xbody_model::particles::Particle;
 use xbody_model::profiler::Profiler;
 use xbody_model::quantity::Units;
 
-fn main() {
+fn main() -> Result<(), String> {
     let r = 0.01 * Units::kpc;
     let m = 1e+9 * Units::MSun;
     let n = 100;
@@ -35,14 +35,16 @@ fn main() {
     {
         let _p = Profiler::new(None);
 
-        for _ in 0..1000 {
-            integr.integrate(&dt);
+        for i in 0..1000 {
+            integr.evolve(&(dt * (i as f64)))?;
         }
     }
 
     for p in integr.get_state().unwrap().particles {
         print_particle(&p);
     }
+
+    return Ok(());
 }
 
 fn print_particle(p: &Particle) {
